@@ -9,18 +9,18 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-require_once('settings.php');
 require_once('S3.php');
 
 /**
  * Uploads a file from WP upload dir to S3 
- * S3_BUCKET/wp_user_login/filename
+ * $s3_bucket/wp_user_login/filename
  * 
  * @param array $data WP file info
  * @uses S3::setExceptions() to throw an exception on S3 error
  * @uses S3::putObject() to upload the file
  * @uses bp_loggedin_user_id() to get the current user id
  * @uses get_userdata() to get the user's login
+ * @uses bp_get_option() to get plugin options
  * @return array $data File info with an eventual error
  */
 function buddydrive_uploadto_s3( $data ) {
@@ -28,16 +28,21 @@ function buddydrive_uploadto_s3( $data ) {
 	$user_info = get_userdata( bp_loggedin_user_id() );
 
 	try {
-            $s3 = new S3(S3_ACCESS_KEY, S3_SECRET_ACCESS_KEY);
+	    $s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
+	    $s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
+	    $s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+	    $s3_use_rrs     = (bool) bp_get_option( '_buddydrive_s3_use_rrs' );
+
+        $s3 = new S3($s3_access_key, $s3_secret_key);
 	    $s3->setExceptions(true);
 
      	    $res = $s3->putObject( $s3->inputFile($data['file']), 
-			        S3_BUCKET, 
+			        $s3_bucket, 
 				$user_info->user_login . '/' . basename($data['file']), 
 				S3::ACL_PRIVATE, 
 				array(), 
 				array('Content-Type' => $data['type']), 
-				S3_USE_RRS ? S3::STORAGE_CLASS_RRS : S3::STORAGE_CLASS_STANDARD );
+				$s3_use_rrs ? S3::STORAGE_CLASS_RRS : S3::STORAGE_CLASS_STANDARD );
 
 	} catch (Exception $e) {
 
@@ -56,16 +61,21 @@ function buddydrive_uploadto_s3( $data ) {
  * @param string $owner_id File owner ID
  * @uses S3::setExceptions() to report a warning on S3 error
  * @uses S3::getObject() to retrieve the file
+ * @uses bp_get_option() to get plugin options
  * @uses get_userdata() to get the user's login
  */
 function buddydrive_downloadfrom_s3( $path, $owner_id ) {
 
 	$user_info = get_userdata( $owner_id );
 
-        $s3 = new S3(S3_ACCESS_KEY, S3_SECRET_ACCESS_KEY);
+	$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
+	$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
+	$s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+
+        $s3 = new S3($s3_access_key, $s3_secret_key);
 	$s3->setExceptions(false);
 
-	$res = $s3->getObject( S3_BUCKET, $user_info->user_login . '/' . basename($path), $path);
+	$res = $s3->getObject( $s3_bucket, $user_info->user_login . '/' . basename($path), $path);
 }
 
 /**
@@ -75,6 +85,7 @@ function buddydrive_downloadfrom_s3( $path, $owner_id ) {
  * @param string $owner_id File owner ID
  * @uses S3::setExceptions() to throw an exception on S3 error
  * @uses S3::getObjectInfo() to retrieve file information
+ * @uses bp_get_option() to get plugin options
  * @uses get_userdata() to get the user's login
  * @return integer File size in bytes
  */
@@ -82,11 +93,15 @@ function buddydrive_filesize_s3( $path, $owner_id ) {
 
 	$user_info = get_userdata( $owner_id );
 
+	$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
+	$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
+	$s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+
 	try {
-            $s3 = new S3(S3_ACCESS_KEY, S3_SECRET_ACCESS_KEY);
+            $s3 = new S3($s3_access_key, $s3_secret_key);
 	    $s3->setExceptions(false);
 
-   	    $info = $s3->getObjectInfo( S3_BUCKET, $user_info->user_login . '/' . basename($path) );
+   	    $info = $s3->getObjectInfo( $s3_bucket, $user_info->user_login . '/' . basename($path) );
 
 	} catch (Exception $e) {
 	}
@@ -101,18 +116,24 @@ function buddydrive_filesize_s3( $path, $owner_id ) {
  * @uses S3::setExceptions() to throw an exception on S3 error
  * @uses S3::deleteObject() to delete the file
  * @uses bp_loggedin_user_id() to get the current user id
+ * @uses bp_get_option() to get plugin options
  * @uses get_userdata() to get the user's login
  */
 function buddydrive_deletefrom_s3( $path ) {
 
 	$user_info = get_userdata( bp_loggedin_user_id() );
 
+	$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
+	$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
+	$s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+
 	try {
-            $s3 = new S3(S3_ACCESS_KEY, S3_SECRET_ACCESS_KEY);
+            $s3 = new S3($s3_access_key, $s3_secret_key);
 	    $s3->setExceptions(true);
 
-            $res = $s3->deleteObject( S3_BUCKET, $user_info->user_login . '/' . basename($path) );
+            $res = $s3->deleteObject( $s3_bucket, $user_info->user_login . '/' . basename($path) );
 
 	} catch (Exception $e) {
 	}
 }
+

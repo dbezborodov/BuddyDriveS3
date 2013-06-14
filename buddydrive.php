@@ -137,6 +137,9 @@ class BuddyDrive {
 		
 		if( is_admin() ){
 			require( $this->includes_dir . 'admin/buddydrive-admin.php'        );
+
+			// DB add new fields for S3 to the settings page
+			require( $this->includes_dir . 'admin/buddydrive-admin-s3.php'        );
 		}
 	}
 	
