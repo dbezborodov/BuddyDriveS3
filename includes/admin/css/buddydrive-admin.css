@@ -1,0 +1,93 @@
+i.bd-icon-file,.bd-icon-folder,
+i.bd-icon-users,
+i.bd-icon-remove,
+i.bd-icon-uniF47C,
+i.bd-icon-createfile,
+i.bd-icon-addfolder,
+i.bd-icon-home,
+i.bd-icon-analytics3,
+i.bd-icon-key,
+i.bd-icon-lock,
+i.bd-icon-unlocked {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url(../../images/buddydrive-bar.png);
+	background-repeat: no-repeat;
+}
+i.bd-icon-file {
+	background-position: 0 0;
+}
+i.bd-icon-folder {
+	background-position: -32px 0;
+}
+i.bd-icon-users {
+	background-position: -64px 0;
+}
+i.bd-icon-remove {
+	background-position: -96px 0;
+}
+i.bd-icon-uniF47C {
+	background-position: -128px 0;
+}
+i.bd-icon-createfile {
+	background-position: -160px 0;
+}
+i.bd-icon-addfolder {
+	background-position: -192px 0;
+}
+i.bd-icon-home {
+	background-position: -224px 0;
+}
+i.bd-icon-analytics3 {
+	background-position: -256px 0;
+}
+i.bd-icon-key {
+	background-position: -288px 0;
+}
+i.bd-icon-lock {
+	background-position: -320px 0;
+}
+i.bd-icon-unlocked {
+	background-position: -352px 0;
+}
+
+#buddydrive-edit-form input {
+	outline: medium none;
+	padding: 3px 8px;
+}
+#buddydrive-edit-form input#buddydrive-item-title {
+	font-size: 1.7em;
+	width: 100%;
+}
+
+#buddydrive-edit-form textarea, #buddydrive-edit-form label{
+	width:100%;
+}
+
+#buddydrive-edit-form label{
+	display:block;
+	margin-top:1em!important;
+	font-weight:bold;
+}
+
+
+#buddydrive-admin-item .button, 
+#buddydrive-admin-item .button-primary, 
+#buddydrive-admin-item .button-secondary {
+	height:inherit;
+	line-height:inherit;
+}
+
+.buddydrive-load-more {
+	background: #f0f0f0;
+	font-size: 110%;
+	margin: 15px 0;
+	padding: 10px 15px;
+	text-align: center;
+}
+
+.buddydrive-load-more a {
+	color: #4D4D4D;
+	text-decoration:none;
+}

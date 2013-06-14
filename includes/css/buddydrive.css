@@ -1,0 +1,277 @@
+i.bd-icon-file,
+i.bd-icon-folder,
+i.bd-icon-users,
+i.bd-icon-remove,
+i.bd-icon-uniF47C,
+i.bd-icon-createfile,
+i.bd-icon-addfolder,
+i.bd-icon-home,
+i.bd-icon-analytics3,
+i.bd-icon-key,
+i.bd-icon-lock,
+i.bd-icon-unlocked {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url(../images/buddydrive-bar.png);
+	background-repeat: no-repeat;
+	border:none;
+	border-radius:0;
+}
+i.bd-icon-file {
+	background-position: 0 0!important;
+}
+i.bd-icon-folder {
+	background-position: -32px 0!important;
+}
+i.bd-icon-users {
+	background-position: -64px 0!important;
+}
+i.bd-icon-remove {
+	background-position: -96px 0!important;
+}
+i.bd-icon-uniF47C {
+	background-position: -128px 0!important;
+}
+i.bd-icon-createfile {
+	background-position: -160px 0!important;
+}
+i.bd-icon-addfolder {
+	background-position: -192px 0!important;
+}
+i.bd-icon-home {
+	background-position: -224px 0!important;
+}
+i.bd-icon-analytics3 {
+	background-position: -256px 0!important;
+}
+i.bd-icon-key {
+	background-position: -288px 0!important;
+}
+i.bd-icon-lock {
+	background-position: -320px 0!important;
+}
+i.bd-icon-unlocked {
+	background-position: -352px 0!important;
+}
+
+#buddypress div.item-list-tabs ul li#buddydrive-action-nav a,
+div.item-list-tabs ul li#buddydrive-action-nav a{
+	display:inline-block;
+}
+#buddypress div.item-list-tabs ul li#buddydrive-action-nav a span,
+div.item-list-tabs ul li#buddydrive-action-nav a span{
+	color:inherit;
+	background:none;
+	border:none;
+	font-size: inherit;
+	vertical-align: inherit;
+	padding:0;
+}
+
+.buddydrive-crumbs {
+	clear:both;
+	margin:1em 0.2em;
+}
+
+.drag-drop #drag-drop-area {
+	border: 4px dashed #DDDDDD;
+	height: 200px;
+}
+
+.drag-drop .drag-drop-inside {
+	margin: 70px auto 0;
+	width: 250px;
+}
+
+.drag-drop-inside p {
+	color: #aaa;
+	font-size: 14px;
+	margin: 5px 0;
+	display: none;
+}
+
+.drag-drop .drag-drop-inside p {
+	text-align: center;
+}
+
+.drag-drop-inside p.drag-drop-info {
+	font-size: 20px;
+}
+
+.drag-drop .drag-drop-inside p,
+.drag-drop-inside p.drag-drop-buttons {
+	display: block;
+}
+
+.drag-drop.drag-over #drag-drop-area {
+	border-color: #83b4d8;
+}
+
+#plupload-upload-ui {
+	position: relative;
+}
+
+.media-item .filename {
+	line-height: 36px;
+	overflow: hidden;
+	padding: 0 10px;
+}
+
+.media-item .error-div {
+	padding-left: 10px;
+}
+
+.media-item .pinkynail {
+	float: left;
+	margin: 2px 2px 0;
+	max-width: 40px;
+	max-height: 32px;
+}
+
+.media-item .startopen,
+.media-item .startclosed {
+	display: none;
+}
+
+.media-item .original {
+	position: relative;
+	height: 34px;
+}
+
+.media-item .progress {
+	float: right;
+	height: 22px;
+	margin: 6px 10px 0 0;
+	width: 200px;
+	line-height: 2em;
+	padding: 0;
+	overflow: hidden;
+	margin-bottom: 2px;
+	border: 1px solid #d1d1d1;
+	background: #f7f7f7;
+	background-image: -webkit-gradient(linear, left bottom, left top, from(#fff), to(#f7f7f7));
+	background-image: -webkit-linear-gradient(bottom, #fff, #f7f7f7);
+	background-image:    -moz-linear-gradient(bottom, #fff, #f7f7f7);
+	background-image:      -o-linear-gradient(bottom, #fff, #f7f7f7);
+	background-image: linear-gradient(to top, #fff, #f7f7f7);
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.1);
+	box-shadow: inset 0 0 3px rgba(0,0,0,0.1);
+}
+
+.media-item .bar {
+	z-index: 9;
+	width: 0;
+	height: 100%;
+	margin-top: -24px;
+	background-color: #8cc1e9;
+	background-image: -webkit-gradient(linear, left bottom, left top, from(#72a7cf), to(#8cc1e9));
+	background-image: -webkit-linear-gradient(bottom, #72a7cf, #8cc1e9);
+	background-image:    -moz-linear-gradient(bottom, #72a7cf, #8cc1e9);
+	background-image:      -o-linear-gradient(bottom, #72a7cf, #8cc1e9);
+	background-image: linear-gradient(to top, #72a7cf, #8cc1e9);
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: 0 0 3px rgba(0,0,0,0.3);
+	box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+.media-item .progress .percent {
+	z-index: 10;
+	position: relative;
+	width: 200px;
+	padding: 0 8px;
+	text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+	color: rgba(0,0,0,0.6);
+}
+
+.buddydrive-mime-type, .buddydrive-last-edit {
+	min-width:100px;
+}
+
+.buddydrive-item-name {
+	min-width:200px;
+	max-width:300px;
+}
+
+.buddydrive-load-more, .buddydrive-opening-dir {
+	background: #f0f0f0;
+	font-size: 110%;
+	margin: 15px 0;
+	padding: 10px 15px;
+	text-align: center;
+}
+
+.buddydrive-load-more a, .buddydrive-opening-dir a {
+	color: #4D4D4D;
+	text-decoration:none;
+}
+
+#buddydrive-file-uploader.hide, 
+#buddydrive-folder-editor.hide,
+#buddydrive-edit-item.hide,
+#buddydrive-file-uploader .hide,
+#buddydrive-folder-editor .hide,
+.buddydrive-ra-link.hide,
+.buddydrive-ra-desc.hide{
+	display:none;
+}
+
+.buddydrive-action {
+	margin-bottom:1em;
+	text-align:right;
+}
+.buddydrive-action.folder {
+	margin-top:1em;
+}
+
+#buddydrive-third-step {
+	margin-bottom:1em;
+}
+
+#buddydrive-third-step #drag-drop-area {
+	padding-bottom:1em;
+}
+
+#buddydrive-third-step .max-upload-size {
+	font-size:80%;
+}
+
+#buddyfile-desc, #buddypress .standard-form textarea {
+	width:98%!important;
+	height:50px!important;
+}
+
+.buddydrive-action-btn{
+	font-size:80%;
+	color:#CCC;
+}
+
+.buddydrive-action-btn a{
+	text-decoration:none;
+	color:#CCC;
+}
+
+.buddydrive-action-btn a:hover{
+	color:#555;
+}
+
+.buddydrive-action-btn a.buddydrive-remove-group:hover{
+	color:red;
+}
+
+.buddydrive-ra-share input{
+	font-size:80%;
+	padding:3px;
+	width:100%;
+}
+
+#bp-default p.buddydrive-action{
+	margin:1em 0;
+}
+
+#bp-default table#buddydrive-dir th{
+	text-align:left;
+}
