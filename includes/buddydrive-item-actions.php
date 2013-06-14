@@ -172,17 +172,24 @@ function buddydrive_file_downloader() {
 			if( $buddydrive_file->user_id == bp_loggedin_user_id() || is_super_admin() )
 				$can_donwload = true;
 		}
-		
+
+		// DB Download from S3 first
+		buddydrive_downloadfrom_s3( $buddydrive_file_path, $buddydrive_file->user_id );
+
 		// we have a file! let's force download.
 		if( file_exists( $buddydrive_file_path ) && !empty( $can_donwload ) ){
 			status_header( 200 );
 			header( 'Cache-Control: cache, must-revalidate' );
 			header( 'Pragma: public' );
 			header( 'Content-Description: File Transfer' );
-			header( 'Content-Length: ' . filesize( $buddydrive_file_path ) );
+			// DB Retrieve file size from S3
+			header( 'Content-Length: ' . buddydrive_filesize_s3( $buddydrive_file_path, $buddydrive_file->user_id ) );
 			header( 'Content-Disposition: attachment; filename='.$buddydrive_file_name );
 			header( 'Content-Type: ' .$buddydrive_file_mime );
 			readfile( $buddydrive_file_path );
+		
+			// DB Remove from WP upload folder
+			unlink( $buddydrive_file_path );
 			die();
 		}
 		

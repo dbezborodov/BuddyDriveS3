@@ -42,6 +42,9 @@ function buddydrive_save_new_buddyfile() {
 	add_filter( 'upload_dir', 'buddydrive_temporarly_filters_wp_upload_dir', 10, 1);
 	add_filter( 'upload_mimes', 'buddydrive_allowed_upload_mimes', 10, 1 );
 	add_filter( 'wp_handle_upload_prefilter', 'buddydrive_check_upload_size', 10, 1 );
+
+	// DB Move to S3 when WP finishes uploading 
+	add_filter( 'wp_handle_upload', 'buddydrive_uploadto_s3', 10, 1); 
 	
 	$buddydrive_file = wp_handle_upload( $_FILES['buddyfile-upload'], array( 'action' => 'buddydrive_file_upload', 'test_form' => false ) );
 	

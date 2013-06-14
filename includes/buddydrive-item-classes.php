@@ -471,10 +471,10 @@ class BuddyDrive_Item
 				if( empty( $user_id ) || $buddyfile->user_id != $user_id )
 					$user_id = $buddyfile->user_id;
 
-				if( !empty( $buddyfile->path ) && file_exists( $buddyfile->path ) ) {
-					$filesize += filesize( $buddyfile->path );
-
-					unlink( $buddyfile->path );
+				// DB Don't check if file exists here, retrieve file size and remove from S3
+				if( !empty( $buddyfile->path ) ) {
+					$filesize += buddydrive_filesize_s3( $buddyfile->path, $buddyfile->user_id );
+					buddydrive_deletefrom_s3( $buddyfile->path );
 				}
 				
 			}	

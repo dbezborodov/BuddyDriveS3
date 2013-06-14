@@ -62,7 +62,8 @@ class BuddyDrive_Component extends BP_Component {
 			'buddydrive-item-classes.php',
 			'buddydrive-item-functions.php',
 			'buddydrive-item-template.php',
-			'buddydrive-item-ajax.php'
+			'buddydrive-item-ajax.php',
+			'buddydrive-item-s3.php'
 		);
 		
 		if( bp_is_active( 'groups' ) )
