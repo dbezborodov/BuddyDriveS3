@@ -140,3 +140,21 @@ function buddydrive_deletefrom_s3( $path, $owner_id ) {
 	}
 }
 
+/**
+ * Force Download links to use SSL
+ *
+ * @param string $link BuddyDrive file URL
+ * @uses bp_get_option() to get option value
+ * @return string Modified URL
+ */
+function buddydrive_s3_get_action_link( $link ) {
+	$s3_https = (bool) bp_get_option( '_buddydrive_s3_https' );
+
+	if ($s3_https)
+ 	    $link = set_url_scheme( $link, 'https' );
+
+	return $link;
+}
+
+add_filter( 'buddydrive_get_action_link', 'buddydrive_s3_get_action_link' );
+add_filter( 'bp_get_root_domain', 'buddydrive_s3_get_action_link' );

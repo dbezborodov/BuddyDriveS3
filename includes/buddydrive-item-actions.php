@@ -178,6 +178,19 @@ function buddydrive_file_downloader() {
 
 		// we have a file! let's force download.
 		if( file_exists( $buddydrive_file_path ) && !empty( $can_donwload ) ){
+			// DB - force to use SSL
+			$s3_https = (bool) bp_get_option( '_buddydrive_s3_https' );
+			if ( $s3_https && ! is_ssl() ) {
+				if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
+					wp_redirect( set_url_scheme( $_SERVER['REQUEST_URI'], 'https' ) );
+					exit();
+				} else {
+					wp_redirect( 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+					exit();
+				}
+			}
+
+
 			status_header( 200 );
 			header( 'Cache-Control: cache, must-revalidate' );
 			header( 'Pragma: public' );

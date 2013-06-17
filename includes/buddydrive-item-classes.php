@@ -722,6 +722,9 @@ class BuddyDrive_Uploader {
 
 			$buddydrive_params = apply_filters( 'buddy_box_upload_post_params', $buddydrive_params ); // hook change! old name: 'swfupload_post_params'
 
+			// DB - force to use SSL
+    			$s3_use_https = (bool) bp_get_option( '_buddydrive_s3_https' );
+
 			$plupload_init = array(
 				'runtimes'            => 'html5,silverlight,flash,html4',
 				'browse_button'       => 'plupload-browse-button',
@@ -731,7 +734,7 @@ class BuddyDrive_Uploader {
 				'multiple_queues'     => false,
 				'multi_selection'     => false,
 				'max_file_size'       => $max_upload_size . 'b',
-				'url'                 => admin_url( 'admin-ajax.php' ),
+				'url'                 => admin_url( 'admin-ajax.php', $s3_use_https ? 'https' : 'admin' ),
 				'flash_swf_url'       => includes_url( 'js/plupload/plupload.flash.swf' ),
 				'silverlight_xap_url' => includes_url( 'js/plupload/plupload.silverlight.xap' ),
 				'filters'             => array( array( 'title' => __( 'Allowed Files' ), 'extensions' => '*') ),

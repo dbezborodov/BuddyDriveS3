@@ -49,6 +49,12 @@ function buddydrive_admin_get_s3_settings_fields( $fields ) {
 				'args'              => array()
 			);
 
+	$fields['buddydrive_settings_main']['_buddydrive_s3_https'] = array(
+				'title'             => __( 'Force upload and download work only over SSL', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_s3_https',
+				'args'              => array()
+			);
+
 	return $fields;
 }
 
@@ -163,6 +169,22 @@ function buddydrive_admin_setting_callback_s3_encrypt() {
 
 	<input id="_buddydrive_s3_encrypt" name="_buddydrive_s3_encrypt" type="checkbox" value="1" <?php checked( $s3_encrypt ); ?> />
 	<label for="_buddydrive_s3_encrypt"><a href='http://aws.amazon.com/s3/faqs/#What_options_do_I_have_for_encrypting_data_stored_on_Amazon_S3' target=_blank><?php _e( 'What\'s this?', 'buddypress' ); ?></a></label>
+
+	<?php
+}
+
+/**
+ * Let the admin force using SSL (https)
+ *
+ * @uses bp_get_option() to get option value
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_s3_https() {
+	$s3_https = (bool) bp_get_option( '_buddydrive_s3_https' );
+	?>
+
+	<input id="_buddydrive_s3_https" name="_buddydrive_s3_https" type="checkbox" value="1" <?php checked( $s3_https ); ?> />
+	<label for="_buddydrive_s3_https"></label>
 
 	<?php
 }
