@@ -32,6 +32,7 @@ function buddydrive_uploadto_s3( $data ) {
 	    $s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
 	    $s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
 	    $s3_use_rrs     = (bool) bp_get_option( '_buddydrive_s3_use_rrs' );
+	    $s3_encrypt     = (bool) bp_get_option( '_buddydrive_s3_encrypt' );
 
         $s3 = new S3($s3_access_key, $s3_secret_key);
 	    $s3->setExceptions(true);
@@ -42,7 +43,8 @@ function buddydrive_uploadto_s3( $data ) {
 				S3::ACL_PRIVATE, 
 				array(), 
 				array('Content-Type' => $data['type']), 
-				$s3_use_rrs ? S3::STORAGE_CLASS_RRS : S3::STORAGE_CLASS_STANDARD );
+				$s3_use_rrs ? S3::STORAGE_CLASS_RRS : S3::STORAGE_CLASS_STANDARD,
+				$s3_encrypt ? S3::SSE_AES256 : S3::SSE_NONE );
 
 	} catch (Exception $e) {
 

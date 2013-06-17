@@ -43,6 +43,12 @@ function buddydrive_admin_get_s3_settings_fields( $fields ) {
 				'args'              => array()
 			);
 
+	$fields['buddydrive_settings_main']['_buddydrive_s3_encrypt'] = array(
+				'title'             => __( 'Enable S3 Server Side Encryption for newly uploaded files', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_s3_encrypt',
+				'args'              => array()
+			);
+
 	return $fields;
 }
 
@@ -130,7 +136,7 @@ function buddydrive_sanitize_s3_bucket( $option ) {
 
 
 /**
- * Let the admin set S3 Access Key
+ * Let the admin choose storage option
  *
  * @uses bp_get_option() to get option value
  * @return string html
@@ -146,15 +152,19 @@ function buddydrive_admin_setting_callback_s3_use_rrs() {
 }
 
 /**
- * Sanitize the S3 Access Key
+ * Let the admin choose server side encryption
  *
- * @param string $option 
- * @return string $option
+ * @uses bp_get_option() to get option value
+ * @return string html
  */
-function buddydrive_sanitize_s3_use_rrs( $option ) {
-	$input = trim( $_POST['_buddydrive_s3_use_rrs'] );
-	
-	return $input;
+function buddydrive_admin_setting_callback_s3_encrypt() {
+	$s3_encrypt = (bool) bp_get_option( '_buddydrive_s3_encrypt' );
+	?>
+
+	<input id="_buddydrive_s3_encrypt" name="_buddydrive_s3_encrypt" type="checkbox" value="1" <?php checked( $s3_encrypt ); ?> />
+	<label for="_buddydrive_s3_encrypt"><a href='http://aws.amazon.com/s3/faqs/#What_options_do_I_have_for_encrypting_data_stored_on_Amazon_S3' target=_blank><?php _e( 'What\'s this?', 'buddypress' ); ?></a></label>
+
+	<?php
 }
 
 add_filter( 'buddydrive_admin_get_settings_fields', 'buddydrive_admin_get_s3_settings_fields' );
