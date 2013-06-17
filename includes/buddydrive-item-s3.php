@@ -16,6 +16,7 @@ require_once('S3.php');
  * $s3_bucket/wp_user_login/filename
  * 
  * @param array $data WP file info
+ * @param integer $owner_id File owner ID
  * @uses S3::setExceptions() to throw an exception on S3 error
  * @uses S3::putObject() to upload the file
  * @uses bp_loggedin_user_id() to get the current user id
@@ -23,9 +24,12 @@ require_once('S3.php');
  * @uses bp_get_option() to get plugin options
  * @return array $data File info with an eventual error
  */
-function buddydrive_uploadto_s3( $data ) {
+function buddydrive_uploadto_s3( $data, $owner_id=0 ) {
 
-	$user_info = get_userdata( bp_loggedin_user_id() );
+	if (!$owner_id) 
+	    $owner_id = bp_loggedin_user_id();
+
+	$user_info = get_userdata( $owner_id );
 
 	try {
 	    $s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
@@ -47,7 +51,6 @@ function buddydrive_uploadto_s3( $data ) {
 				$s3_encrypt ? S3::SSE_AES256 : S3::SSE_NONE );
 
 	} catch (Exception $e) {
-
 	    $data['error'] = $e->getMessage();
 	}
 

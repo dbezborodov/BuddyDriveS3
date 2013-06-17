@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: Buddydrive
-Plugin URI: http://imathi.eu/tag/buddydrive/
-Description: A plugin to share files, the BuddyPress way!
-Version: 1.0
-Author: imath
-Author URI: http://imathi.eu/
+Plugin Name: BuddydriveS3
+Plugin URI: https://github.com/dbezborodov/BuddyDriveS3
+Description: Buddydrive fork, uses Amazon S3 instead of local storage
+Version: 1.1
+Author: dbezborodov
+Author URI: https://github.com/dbezborodov
 License: GPLv2
 Network: true
 Text Domain: buddydrive
@@ -140,6 +140,7 @@ class BuddyDrive {
 
 			// DB add new fields for S3 to the settings page
 			require( $this->includes_dir . 'admin/buddydrive-admin-s3.php'        );
+#			require( $this->includes_dir . 'buddydrive-item-s3.php'        );
 		}
 	}
 	

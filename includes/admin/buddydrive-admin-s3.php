@@ -55,6 +55,13 @@ function buddydrive_admin_get_s3_settings_fields( $fields ) {
 				'args'              => array()
 			);
 
+	$fields['buddydrive_settings_main']['_buddydrive_s3_move'] = array(
+				'title'             => __( 'Move files to S3', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_s3_move',
+				'sanitize_callback' => 'buddydrive_sanitize_s3_move',
+				'args'              => array()
+			);
+
 	return $fields;
 }
 
@@ -187,6 +194,61 @@ function buddydrive_admin_setting_callback_s3_https() {
 	<label for="_buddydrive_s3_https"></label>
 
 	<?php
+}
+
+/**
+ * Let the admin move local files to S3
+ *
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_s3_move() {
+	?>
+
+	<input id="_buddydrive_s3_move" name="_buddydrive_s3_move" type="checkbox" value="1" />
+	<label for="_buddydrive_s3_move">Use this to move files from local version of Buddydrive to S3</label>
+
+	<?php
+}
+
+/**
+ * Sanitize the Move checkbox
+ *
+ * @param string $option 
+ * @uses WP_Query to retrieve posts from WP database
+ * @uses buddydrive_uploadto_s3() to upload files
+ * @uses wp_reset_postdata() to reset global $post
+ * @return string $option
+ */
+function buddydrive_sanitize_s3_move( $option ) {
+	if ( $_POST['_buddydrive_s3_move'] ) {
+
+		// Select all BuddyDrive files
+		$query = new WP_Query($args = array( 'post_status' => 'publish',
+						     'post_type'   => buddydrive()->buddydrive_file_post_type
+							));
+
+		$upload_datas = wp_upload_dir();
+		$buddydrive_dir = $upload_datas["basedir"] .'/buddydrive';
+
+		// Move all existing to S3
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+
+				$file = basename( $query->post->guid );
+				$path = $buddydrive_dir .'/'. $file;
+
+				if( file_exists( $path ) ) {
+				    buddydrive_uploadto_s3( array('file' => $path, 
+								  'type' => $query->post->post_mime_type), 
+							    $query->post->post_author );
+				}
+			}
+		}
+
+		wp_reset_postdata();
+	}
+	return 0;
 }
 
 add_filter( 'buddydrive_admin_get_settings_fields', 'buddydrive_admin_get_s3_settings_fields' );
