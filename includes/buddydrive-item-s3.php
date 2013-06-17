@@ -113,15 +113,16 @@ function buddydrive_filesize_s3( $path, $owner_id ) {
  * Delete a file from S3
  * 
  * @param string $path Path to the file
+ * @param string $owner_id File owner ID
  * @uses S3::setExceptions() to throw an exception on S3 error
  * @uses S3::deleteObject() to delete the file
  * @uses bp_loggedin_user_id() to get the current user id
  * @uses bp_get_option() to get plugin options
  * @uses get_userdata() to get the user's login
  */
-function buddydrive_deletefrom_s3( $path ) {
+function buddydrive_deletefrom_s3( $path, $owner_id ) {
 
-	$user_info = get_userdata( bp_loggedin_user_id() );
+	$user_info = get_userdata( $owner_id );
 
 	$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
 	$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
