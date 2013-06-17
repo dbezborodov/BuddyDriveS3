@@ -102,7 +102,7 @@ function buddydrive_admin_setting_callback_s3_secret_key() {
 	$s3_secret_key = bp_get_option( '_buddydrive_s3_secret_key' );
 	?>
 
-	<input name="_buddydrive_s3_secret_key" type="text" id="_buddydrive_s3_secret_key" value="<?php echo $s3_secret_key;?>" class="regular-text" />
+	<input name="_buddydrive_s3_secret_key" type="password" id="_buddydrive_s3_secret_key" value="<?php echo $s3_secret_key;?>" class="regular-text" />
 
 	<?php
 }
