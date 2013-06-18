@@ -2,8 +2,8 @@
 /**
  * BuddyDrive S3 admin routines
  *
- * @author Dmitry Bezborodov <bezborodov@gmail.com>
- * @version 0.1.0
+ * @author Dmitry Bezborodov
+ * @version 1.1.0
  */
 
 // Exit if accessed directly

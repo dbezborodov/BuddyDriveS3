@@ -1,42 +1,32 @@
 === BuddyDrive ===
-Contributors: imath
-Donate link: http://imathi.eu/donations/
-Tags: BuddyPress, files, folders
+Contributors: dbezborodov, imath
+Donate link: 
+Tags: Amazon, S3, BuddyDrive, BuddyPress, files, folders
 Requires at least: 3.5.1
 Tested up to: 3.5.1
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2
 
 Share files the BuddyPress way!
 
 == Description ==
 
-BuddyDrive is a BuddyPress 1.7 plugin that uses WordPress built in features for the management of its post attachments to allow the members of a community to share a file or a list of files thanks to the BuddyDrive folders.
-Depending on the BuddyPress settings, the access to the BuddyDrive user's content can be restricted to
-
-* the owner of the item only,
-* people that know the password the owner set for his item,
-* the friends of the owner of the file,
-* the members of the group the content is attached to,
-* or everybody !
-
-This plugin is available in english and french.
-
-http://vimeo.com/64323101
-
-<strong>NB : make sure to activate the plugin in the network admin if you run a multisite WordPress</strong>
+BuddyDriveS3 is a BuddyDrive fork that uses Amazon S3 to store files securely. It has same features as original BuddyDrive plugin. 
+This plugin is available in english.
 
 == Installation ==
 
-You can download and install BuddyDrive using the built in WordPress plugin installer. If you download BuddyDrive manually, make sure it is uploaded to "/wp-content/plugins/buddydrive/".
+You can download and install BuddyDriveS3 using the built in WordPress plugin installer. If you download BuddyDriveS3 manually, make sure it is uploaded to "/wp-content/plugins/buddydrive/".
 
-Activate BuddyDrive in the "Plugins" admin panel using the "Network Activate" (or "Activate" if you are not running a network) link.
+Activate BuddyDrive in the "Plugins" admin panel using the "Network Activate" (or "Activate" if you are not running a network) link. 
+
+Please note: it can't work along with original plugin at the same time! You have to "Deactivate" BuddyDrive if you have it installed and active, then "Activate" BuddyDriveS3. 
+
+You will have an option to Move existing BuddyDrive files to Amazon S3 storage from "Settings" page.
 
 == Frequently Asked Questions ==
 
 = If you have any question =
-
-Please add a comment <a href="http://imathi.eu/tag/buddydrive/">here</a>
 
 == Screenshots ==
 
@@ -47,6 +37,9 @@ Please add a comment <a href="http://imathi.eu/tag/buddydrive/">here</a>
 5. BuddyDrive settings page
 
 == Changelog ==
+
+= 1.1 =
+* Amazon S3 instead of local storage
 
 = 1.0 =
 * files, folders management for users
