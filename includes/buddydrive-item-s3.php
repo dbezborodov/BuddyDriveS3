@@ -38,7 +38,9 @@ function buddydrive_uploadto_s3( $data, $owner_id=0 ) {
 	    $s3_use_rrs     = (bool) bp_get_option( '_buddydrive_s3_use_rrs' );
 	    $s3_encrypt     = (bool) bp_get_option( '_buddydrive_s3_encrypt' );
 
-        $s3 = new S3($s3_access_key, $s3_secret_key);
+	    if ( !$s3_access_key || !$s3_secret_key || !$s3_bucket ) return $data;
+
+            $s3 = new S3($s3_access_key, $s3_secret_key);
 	    $s3->setExceptions(true);
 
      	    $res = $s3->putObject( $s3->inputFile($data['file']), 
@@ -76,6 +78,8 @@ function buddydrive_downloadfrom_s3( $path, $owner_id ) {
 	$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
 	$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
 	$s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+
+	if ( !$s3_access_key || !$s3_secret_key || !$s3_bucket ) return;
 
         $s3 = new S3($s3_access_key, $s3_secret_key);
 	$s3->setExceptions(false);

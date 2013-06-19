@@ -195,14 +195,19 @@ function buddydrive_file_downloader() {
 			header( 'Cache-Control: cache, must-revalidate' );
 			header( 'Pragma: public' );
 			header( 'Content-Description: File Transfer' );
-			// DB Retrieve file size from S3
-			header( 'Content-Length: ' . buddydrive_filesize_s3( $buddydrive_file_path, $buddydrive_file->user_id ) );
+			header( 'Content-Length: ' . filesize( $buddydrive_file_path ) );
 			header( 'Content-Disposition: attachment; filename='.$buddydrive_file_name );
 			header( 'Content-Type: ' .$buddydrive_file_mime );
 			readfile( $buddydrive_file_path );
 		
 			// DB Remove from WP upload folder
-			unlink( $buddydrive_file_path );
+			$s3_access_key  = bp_get_option( '_buddydrive_s3_access_key' );
+			$s3_secret_key  = bp_get_option( '_buddydrive_s3_secret_key' );
+			$s3_bucket      = bp_get_option( '_buddydrive_s3_bucket' );
+
+			if ($s3_access_key && $s3_secret_key && $s3_bucket )
+				@unlink( $buddydrive_file_path );
+
 			die();
 		}
 		
