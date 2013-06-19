@@ -221,6 +221,7 @@ function buddydrive_admin_setting_callback_s3_move() {
  */
 function buddydrive_sanitize_s3_move( $option ) {
 	if ( $_POST['_buddydrive_s3_move'] ) {
+		set_time_limit(0);
 
 		// Select all BuddyDrive files
 		$query = new WP_Query($args = array( 'post_status' => 'publish',
