@@ -24,6 +24,11 @@ Please note: it can't work along with original plugin at the same time! You have
 
 You will have an option to Move existing BuddyDrive files to Amazon S3 storage from "Settings" page.
 
+== Important notes ==
+
+If Amazon S3 keys are not specified on "Settings" page, the Plugin will work exactly like original BuddyDrive. 
+If you used BuddyDriveS3 and then decided to switch to BuddyDrive, "Deactivate" BuddyDriveS3 plugin and then move all files from all sub-folders within your S3 bucket to "wp-content/upload/buddydrive/". This way you won't lose your files.
+
 == Frequently Asked Questions ==
 
 = If you have any question =

@@ -21,6 +21,11 @@ The WordPress Plugin BuddyDriveS3 is a fork of BuddyDrive plugin, it uses Amazon
 
 This will activate the WordPress Plugin BuddyDriveS3. Then from *Settings* page you can Move existing BuddyDrive files (if any) to Amazon S3.
 
+## Important notes
+
+If Amazon S3 keys are not specified on *Settings* page, the Plugin will work exactly like original BuddyDrive. 
+If you used BuddyDriveS3 and then decided to switch to BuddyDrive, *Deactivate* BuddyDriveS3 plugin and then move all files from all sub-folders within your S3 bucket to "wp-content/upload/buddydrive/". This way you won't lose your files.
+
 ## License
 
 The WordPress Plugin BuddyDriveS3 is licensed under the GPL v2 or later.
