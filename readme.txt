@@ -14,6 +14,8 @@ Share files the BuddyPress way!
 BuddyDriveS3 is a BuddyDrive fork that uses Amazon S3 to store files securely. It has same features as original BuddyDrive plugin. 
 This plugin is available in english.
 
+There is no support available for the plugin.
+
 == Installation ==
 
 You can download and install BuddyDriveS3 using the built in WordPress plugin installer. If you download BuddyDriveS3 manually, make sure it is uploaded to "/wp-content/plugins/buddydrive/".
