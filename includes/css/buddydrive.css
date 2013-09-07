@@ -219,8 +219,8 @@ div.item-list-tabs ul li#buddydrive-action-nav a span{
 	display:none;
 }
 
-.buddydrive-action {
-	margin-bottom:1em;
+.buddydrive-action, .entry-content p.buddydrive-action {
+	margin:1em 0;
 	text-align:right;
 }
 .buddydrive-action.folder {

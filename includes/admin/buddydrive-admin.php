@@ -55,6 +55,11 @@ class BuddyDrive_Admin {
 	public $notice_hook = '';
 
 	/**
+	 * @var the user columns filter depending on config (multisite or not)
+	 */
+	public $user_columns_filter = '';
+
+	/**
 	 * @var the BuddyDrive hook_suffixes to eventually load script
 	 */
 	public $hook_suffixes = array();
@@ -83,17 +88,19 @@ class BuddyDrive_Admin {
 	 * @since version (1.0)
 	 * @access private
 	 *
+	 * @uses buddydrive() to get some globals of plugin instance
 	 * @uses bp_core_do_network_admin() to define the best menu (network)
 	 */
 	private function setup_globals() {
 		$buddydrive = buddydrive();
-		$this->admin_dir     = trailingslashit( $buddydrive->includes_dir . 'admin'  ); // Admin path
-		$this->admin_url     = trailingslashit( $buddydrive->includes_url . 'admin'  ); // Admin url
-		$this->images_url    = trailingslashit( $this->admin_url   . 'images' ); // Admin images URL
-		$this->styles_url    = trailingslashit( $this->admin_url   . 'css' ); // Admin styles URL*/
-		$this->js_url        = trailingslashit( $this->admin_url   . 'js' );
-		$this->settings_page = bp_core_do_network_admin() ? 'settings.php' : 'options-general.php';
-		$this->notice_hook   = bp_core_do_network_admin() ? 'network_admin_notices' : 'admin_notices' ;
+		$this->admin_dir           = trailingslashit( $buddydrive->includes_dir . 'admin'  ); // Admin path
+		$this->admin_url           = trailingslashit( $buddydrive->includes_url . 'admin'  ); // Admin url
+		$this->images_url          = trailingslashit( $this->admin_url   . 'images' ); // Admin images URL
+		$this->styles_url          = trailingslashit( $this->admin_url   . 'css' ); // Admin styles URL*/
+		$this->js_url              = trailingslashit( $this->admin_url   . 'js' );
+		$this->settings_page       = bp_core_do_network_admin() ? 'settings.php' : 'options-general.php';
+		$this->notice_hook         = bp_core_do_network_admin() ? 'network_admin_notices' : 'admin_notices' ;
+		$this->user_columns_filter = bp_core_do_network_admin() ? 'wpmu_users_columns' : 'manage_users_columns';
 	}
 
 	/**
@@ -121,18 +128,21 @@ class BuddyDrive_Admin {
 
 		/** General Actions ***************************************************/
 
-		add_action( bp_core_admin_hook(),               array( $this, 'admin_menus'             ) ); // Add menu item to settings menu
+		add_action( bp_core_admin_hook(),                 array( $this, 'admin_menus'             ) ); // Add menu item to settings menu
 		add_action( 'buddydrive_admin_head',              array( $this, 'admin_head'              ) ); // Add some general styling to the admin area
-		add_action( $this->notice_hook,                 array( $this, 'activation_notice'       ) ); // Checks for BuddyDrive Upload directory once activated
+		add_action( $this->notice_hook,                   array( $this, 'activation_notice'       ) ); // Checks for BuddyDrive Upload directory once activated
 		add_action( 'buddydrive_admin_register_settings', array( $this, 'register_admin_settings' ) ); // Add settings
 		add_action( 'buddydrive_activation',              array( $this, 'new_install'             ) ); // Add menu item to settings menu
-		add_action( 'admin_enqueue_scripts',            array( $this, 'enqueue_scripts'         ), 10, 1 ); // Add enqueued JS and CSS
+		add_action( 'admin_enqueue_scripts',              array( $this, 'enqueue_scripts'         ), 10, 1 ); // Add enqueued JS and CSS
 
 		/** Filters ***********************************************************/
 
 		// Modify BuddyDrive's admin links
 		add_filter( 'plugin_action_links',               array( $this, 'modify_plugin_action_links' ), 10, 2 );
 		add_filter( 'network_admin_plugin_action_links', array( $this, 'modify_plugin_action_links' ), 10, 2 );
+
+		// Filters the user space left output to strip html tags
+		add_filter( 'buddydrive_get_user_space_left',    'buddydrive_filter_user_space_left'         , 10, 2 );
 
 		// Allow plugins to modify these actions
 		do_action_ref_array( 'buddydrive_admin_loaded', array( &$this ) );
@@ -185,6 +195,14 @@ class BuddyDrive_Admin {
 
 		// Hook into early actions to load custom CSS and our init handler.
 		add_action( "load-$hook", 'buddydrive_files_admin_load' );
+
+		// Putting user edit hooks there, this way we're sure they will load at the right place
+		add_action( 'edit_user_profile',          array( $this, 'edit_user_quota'           ), 10, 1 );
+		add_action( 'edit_user_profile_update',   array( $this, 'save_user_quota'           ), 10, 1 );
+		add_action( 'set_user_role',              array( $this, 'update_user_quota_to_role' ), 10, 2 );
+		
+		add_filter( $this->user_columns_filter,   array( $this, 'user_quota_column' )        );
+		add_filter( 'manage_users_custom_column', array( $this, 'user_quota_row'    ), 10, 3 );
 		
 		if( is_multisite() ) {
 			$hook_settings = $this->hook_suffixes[0];
@@ -397,7 +415,7 @@ class BuddyDrive_Admin {
 		?>
 		<div class="wrap about-wrap">
 			<h1><?php printf( __( 'BuddyDrive %s', 'buddydrive' ), $display_version ); ?></h1>
-			<div class="about-text"><?php printf( __( 'Thank you for downloading and installing the very first version of BuddyDrive! BuddyDrive %s is ready to manage the files and folders of your buddies!', 'buddydrive' ), $display_version ); ?></div>
+			<div class="about-text"><?php printf( __( 'Thank you for upgrading to the latest version of BuddyDrive! BuddyDrive %s is ready to manage the files and folders of your buddies!', 'buddydrive' ), $display_version ); ?></div>
 			<div class="buddydrive-badge"><?php printf( __( 'Version %s', 'buddydrive' ), $display_version ); ?></div>
 
 			<h2 class="nav-tab-wrapper">
@@ -415,7 +433,19 @@ class BuddyDrive_Admin {
 				</div>
 			</div>
 
+			<div class="changelog">
+				<h3><?php printf( __( 'What&#39; new in %s ?', 'buddydrive' ), $display_version ); ?></h3>
 
+				<div class="feature-section">
+					<ul>
+						<li><?php _e( 'Slugs and names are now fully customizable to help you make BuddyDrive your very own file sharing system', 'buddydrive' ); ?></li>
+						<li><?php _e( 'Administrator now have a finer control of user&#39;s BuddyDrive quota : it can be different by WordPress roles and by users', 'buddydrive' );?></li>
+						<li><?php _e( 'From the WordPress administration, Administrator can be informed about each user&#39;s BuddyDrive usage thanks to a new column in the users list', 'buddydrive' );?></li>
+						<li><?php _e( 'The Administrator can auto-enable BuddyDrive for groups once their creation steps are completed', 'buddydrive' );?></li>
+						<li><?php printf( __( 'Finally version %s fixes a bug with the hidden groups, It&#39;s now possible to share files in this kind of groups', 'buddydrive' ), $display_version );?></li>
+					</ul>
+				</div>
+			</div>
 
 			<div class="changelog">
 				<h3><?php _e( 'User&#39;s BuddyDrive', 'buddydrive' ); ?></h3>
@@ -524,6 +554,158 @@ class BuddyDrive_Admin {
 	public function multisite_upload_trick() {
 		remove_filter( 'upload_mimes', 'check_upload_mimes' );
 		remove_filter( 'upload_size_limit', 'upload_size_limit_filter' );
+	}
+
+	/**
+	 * Displays a field to customize the user's upload quota
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param  object $profileuser data about the user being edited
+	 * @global $blog_id the id of the current blog
+	 * @uses bp_get_root_blog_id() to make sure we're on the blog BuddyPress is activated on
+	 * @uses  current_user_can() to check for edit user capability
+	 * @uses ve_get_quota_by_user_id() to get user's quota (default to role's default)
+	 * @uses esc_html_e() to sanitize translation before display.
+	 * @return string html output
+	 */
+	public static function edit_user_quota( $profileuser ) {
+		global $blog_id;
+
+		if( $blog_id != bp_get_root_blog_id() )
+			return;
+
+		// Bail if current user cannot edit users
+		if ( ! current_user_can( 'edit_user', $profileuser->ID ) )
+			return;
+			
+		$user_quota = buddydrive_get_quota_by_user_id( $profileuser->ID );
+		?>
+
+		<h3><?php esc_html_e( 'User&#39;s BuddyDrive quota', 'bbpress' ); ?></h3>
+
+		<table class="form-table">
+			<tbody>
+				<tr>
+					<th><label for="_buddydrive_user_quota"><?php esc_html_e( 'Space available', 'buddydrive' ); ?></label></th>
+					<td>
+						<input name="_buddydrive_user_quota" type="number" min="1" step="1" id="_buddydrive_user_quota" value="<?php echo $user_quota;?>" class="small-text" />
+						<label for="_buddydrive_user_quota"><?php _e( 'MO', 'buddydrive' ); ?></label>
+					</td>
+				</tr>
+
+			</tbody>
+		</table>
+
+		<?php
+	}
+
+	/**
+	 * Saves the user's quota on profile edit
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param  integer $user_id (the on being edited)
+	 * @global $wpdb the WordPress db class
+	 * @global $blog_id the id of the current blog
+	 * @uses bp_get_root_blog_id() to make sure we're on the blog BuddyPress is activated on
+	 * @uses current_user_can() to check for edit user capability
+	 * @uses get_user_meta() to get user's preference
+	 * @uses bp_get_option() to get blog's preference
+	 * @uses buddydrive() to get the old role global
+	 * @uses update_user_meta() to save user's quota
+	 */
+	public static function save_user_quota( $user_id ) {
+		global $wpdb, $blog_id;
+
+		if( $blog_id != bp_get_root_blog_id() )
+			return;
+
+		if ( ! current_user_can( 'edit_user', $user_id ) )
+			return;
+
+		if( empty( $_POST['_buddydrive_user_quota'] ) )
+			return;
+
+		$user_roles = get_user_meta( $user_id, $wpdb->get_blog_prefix( bp_get_root_blog_id() ) . 'capabilities', true );
+		$user_roles = array_keys( $user_roles );
+		$user_role = is_array( $user_roles ) ? $user_roles[0] : bp_get_option('default_role');
+
+		// temporarly setting old role
+		buddydrive()->old_role = $user_role;
+		
+
+		update_user_meta( $user_id, '_buddydrive_user_quota', intval( $_POST['_buddydrive_user_quota'] ) );
+	}
+
+	/**
+	 * Updates the user quota on role changed
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param  integer $user_id the id of the user being edited
+	 * @param  string $role the new role of the user
+	 * @global $blog_id the id of the current blog
+	 * @uses bp_get_root_blog_id() to make sure we're on the blog BuddyPress is activated on
+	 * @uses buddydrive() to get the old role global
+	 * @uses bp_get_option() to get main blog option
+	 * @uses update_user_meta() to save user's preference
+	 */
+	public static function update_user_quota_to_role( $user_id, $role ) {
+		global $blog_id;
+
+		if( $blog_id != bp_get_root_blog_id() )
+			return;
+
+		$buddydrive = buddydrive();
+
+		$old_role = !empty( $buddydrive->old_role ) ? $buddydrive->old_role : false;
+
+		if( isset( $_POST['_buddydrive_user_quota'] ) && $old_role == $role )
+			return;
+
+		$option_user_quota = bp_get_option( '_buddydrive_user_quota', 1000 );
+
+		if( is_array( $option_user_quota ) )
+			$user_quota = !empty( $option_user_quota[$role] ) ? $option_user_quota[$role] : 1000;
+		else
+			$user_quota = $option_user_quota;
+		
+		update_user_meta( $user_id, '_buddydrive_user_quota', $user_quota );
+	}
+
+	/**
+	 * Adds a column to admin user listing to show drive usage
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param  array $columns the different column of the WP_List_Table
+	 * @return array the new columns
+	 */
+	public static function user_quota_column( $columns = array() ) {
+		$columns['user_quota'] = __( 'BuddyDrive Usage',  'buddydrive' );
+
+		return $columns;
+	}
+
+	/**
+	 * Displays the row data for our new column
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param  string  $retval
+	 * @param  string  $column_name
+	 * @param  integer $user_id
+	 * @uses buddydrive_get_user_space_left() to calculate the disk usage
+	 * @return string the user's drive usage
+	 */
+	public static function user_quota_row( $retval = '', $column_name = '', $user_id = 0 ) {
+		
+		if ( 'user_quota' === $column_name )
+			$retval = buddydrive_get_user_space_left( false, $user_id ) .'%';
+
+		// Pass retval through
+		return $retval;
 	}
 	
 }

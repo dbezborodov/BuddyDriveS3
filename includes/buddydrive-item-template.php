@@ -6,18 +6,19 @@ if ( !defined( 'ABSPATH' ) ) exit;
 /**
  * Echoes the right link to BuddyDrive root folder regarding to context
  *
- * @uses bp_is_my_profile() to check for user's profile
+ * @uses bp_is_user() to check for user's buddydrive
  * @uses bp_current_action() to check for BuddyDrive nav
  * @uses buddydrive_get_user_buddydrive_url() to print the BuuddyBox user's url
+ * @uses buddydrive_get_friends_subnav_slug() to get friends subnav slug
  * @uses buddydrive_get_friends_buddydrive_url() to print the Shared by friends BuddyDrive Url
  * @uses buddydrive_is_group() to check for the BuddyDrive group area
  * @uses buddydrive_get_group_buddydrive_url() to print the BuddyDrive group's url
  * @return the right url
  */
 function buddydrive_component_home_url() {
-	if( bp_is_my_profile() && bp_current_action() == 'files' )
+	if( bp_is_user() && bp_current_action() == 'files' )
 		echo buddydrive_get_user_buddydrive_url();
-	else if( bp_is_my_profile() && bp_current_action() == 'friends' )
+	else if( bp_is_user() && bp_current_action() == buddydrive_get_friends_subnav_slug() )
 		echo buddydrive_get_friends_buddydrive_url();
 	else if( buddydrive_is_group() )
 		echo buddydrive_get_group_buddydrive_url();
@@ -144,11 +145,11 @@ function buddydrive_select_user_group( $user_id = false, $selected = false, $nam
 		if( !bp_is_active( 'groups' ) )
 			return $output;
 		
-		$user_groups = groups_get_groups( array( 'user_id' => $user_id ) );
+		$user_groups = groups_get_groups( array( 'user_id' => $user_id, 'show_hidden' => true ) );
 
 		$buddydrive_groups = false;
 
-		// checking for available buffybox groups
+		// checking for available buddydrive groups
 		if( !empty( $user_groups['groups'] ) ) {
 			foreach( $user_groups['groups'] as $group ) {
 				if( 1 == groups_get_groupmeta( $group->id, '_buddydrive_enabled' ) )
@@ -217,9 +218,11 @@ function buddydrive_user_used_quota( $type = false, $user_id = false ) {
 
 	/**
 	 * Gets the space a user is using with his files
+	 * 
 	 * @param  string $type    html or a diff
 	 * @param  int $user_id the user id
-	 * @uses get_option() to get admin choices about available quota for each user
+	 * @uses bp_loggedin_user_id() to get current user id
+	 * @uses buddydrive_get_quota_by_user_id() to get quota for user
 	 * @uses get_user_meta() to get user's space used so far
 	 * @return int|string   the space left or html to display it
 	 */
@@ -227,7 +230,7 @@ function buddydrive_user_used_quota( $type = false, $user_id = false ) {
 		if( empty( $user_id ) )
 			$user_id = bp_loggedin_user_id();
 
-		$max_space = get_option( '_buddydrive_user_quota', 1000 );
+		$max_space = buddydrive_get_quota_by_user_id( $user_id );
 		$max_space = intval( $max_space ) * 1024 * 1024 ;
 
 		$used_space = get_user_meta( $user_id, '_buddydrive_total_space', true );
@@ -271,6 +274,9 @@ function buddydrive_has_items( $args = '' ) {
 			$user = bp_displayed_user_id();
 
 		$buddyscope = bp_current_action();
+
+		if( $buddyscope == buddydrive_get_friends_subnav_slug() )
+			$buddyscope = 'friends';
 
 		if( is_admin() )
 			$buddyscope = 'admin';
@@ -644,6 +650,8 @@ function buddydrive_group_avatar() {
 	 * @uses groups_get_group() to get the group object for the group_id
 	 * @uses bp_get_group_permalink() to get the group link
 	 * @uses bp_core_fetch_avatar() to get the group avatar
+	 * @uses groups_is_user_member() to check for user's membership
+	 * @uses bp_loggedin_user_id() to get current user id
 	 * @return string the group avatar
 	 */
 	function buddydrive_get_group_avatar( $item_id = false, $nolink = false, $width ='32', $height = '32' ) {
@@ -682,6 +690,9 @@ function buddydrive_group_avatar() {
 										'title'      => $group_name
 									) );
 
+		if( 'hidden' == $group->status && !groups_is_user_member( bp_loggedin_user_id(), $buddydrive_item_group_meta ) && !is_super_admin() )
+			$nolink = true;
+		
 		if( !empty( $nolink ) )
 			return $group_avatar;
 		else

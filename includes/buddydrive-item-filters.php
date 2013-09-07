@@ -125,7 +125,7 @@ function buddydrive_add_friend_to_recipients( $recipients ) {
  */
 function buddydrive_hide_item( $args ) {
 
-	$buddydrive_slug = buddydrive_get_slug();
+	$buddydrive_slug = buddydrive()->buddydrive_slug;
 	
 	$directory_pages = bp_core_get_directory_page_ids();
 	
@@ -134,3 +134,20 @@ function buddydrive_hide_item( $args ) {
 }
 
 add_filter( 'wp_page_menu_args', 'buddydrive_hide_item', 9, 1 );
+
+/**
+ * Adds buddydrive's slug to the groups forbidden names
+ *
+ * @since  version 1.1
+ * 
+ * @param  array  $names the groups forbidden names
+ * @uses buddydrive_get_slug() to get the plugin's slug
+ * @return array        the same names + buddydrive's slug.
+ */
+function buddydrive_add_to_group_forbidden_names( $names = array() ) {
+
+	$names[] = buddydrive_get_slug();
+	return $names;
+}
+
+add_filter( 'groups_forbidden_names', 'buddydrive_add_to_group_forbidden_names' );

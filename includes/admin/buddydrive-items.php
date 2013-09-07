@@ -3,6 +3,9 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
+// Include WP's list table class
+if ( !class_exists( 'WP_List_Table' ) ) require( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
+
 /**
  * Inspired by BuddyPress 1.7 group admin UI
  */
@@ -397,7 +400,7 @@ function buddydrive_admin_edit_metabox_privacy( $item ) {
 			<table>
 				<tr>
 					<td><?php echo $avatar;?></td>
-					<td><?php _e('BuddyDrive Space', 'buddydrive');?> : <?php buddydrive_user_used_quota( false, $owner );?></td>
+					<td><?php _e('BuddyDrive Usage', 'buddydrive');?> : <?php buddydrive_user_used_quota( false, $owner );?> %</td>
 				</tr>
 			</table>
 		</div>

@@ -65,11 +65,14 @@ function buddydrive_slug() {
 	/**
 	 * Gets the slug of the plugin
 	 * 
-	 * @uses buddydrive()
+	 * @uses buddydrive() to get plugin's globals
+	 * @uses buddypress() to get directory pages global settings
 	 * @return string the slug
 	 */
 	function buddydrive_get_slug() {
-		return buddydrive()->buddydrive_slug;
+		$slug = isset( buddypress()->pages->buddydrive->slug ) ? buddypress()->pages->buddydrive->slug : buddydrive()->buddydrive_slug ;
+
+		return apply_filters( 'buddydrive_get_slug', $slug );
 	}
 
 /**
@@ -84,11 +87,92 @@ function buddydrive_name() {
 	/**
 	 * Gets the name of the plugin
 	 * 
-	 * @uses buddydrive()
+	 * @uses buddydrive() to get plugin's globals
+	 * @uses buddypress() to get directory pages global settings
 	 * @return string the name
 	 */
 	function buddydrive_get_name() {
-		return buddydrive()->buddydrive_name;
+		$name = isset( buddypress()->pages->buddydrive->slug ) ? buddypress()->pages->buddydrive->title : buddydrive()->buddydrive_name ;
+
+		return apply_filters( 'buddydrive_get_name', $name );
+	}
+
+/**
+ * Prints the user main subnav
+ *
+ * @since  BuddyDrive 1.1
+ *
+ * @uses buddydrive_get_user_subnav_name() to get the user's subnav name
+ * @return string the subnav name
+ */
+function buddydrive_user_subnav_name() {
+	echo buddydrive_get_user_subnav_name();
+}
+	
+	/**
+	 * Returns the BuddyDrive user's subnav name
+	 *
+	 * @since  BuddyDrive 1.1
+	 *
+	 * @uses bp_get_option() to get root blog preferences
+	 * @return string the subnav name
+	 */
+	function buddydrive_get_user_subnav_name() {
+		$user_subnav = bp_get_option( '_buddydrive_user_subnav_name', __( 'BuddyDrive Files', 'buddydrive' ) );
+
+		return apply_filters( 'buddydrive_get_user_subnav_name', $user_subnav );
+	}
+
+/**
+ * Prints the friends subnav
+ *
+ * @since  BuddyDrive 1.1
+ *
+ * @uses buddydrive_get_friends_subnav_name() to get the friends subnav name
+ * @return string the subnav name
+ */
+function buddydrive_friends_subnav_name() {
+	echo buddydrive_get_friends_subnav_name();
+}
+	
+	/**
+	 * Returns the BuddyDrive friends subnav name
+	 *
+	 * @since  BuddyDrive 1.1
+	 *
+	 * @uses bp_get_option() to get root blog preferences
+	 * @return string the subnav name
+	 */
+	function buddydrive_get_friends_subnav_name() {
+		$friends_subnav = bp_get_option( '_buddydrive_friends_subnav_name', __( 'Shared by Friends', 'buddydrive' ) );
+
+		return apply_filters( 'buddydrive_get_friends_subnav_name', $friends_subnav );
+	}
+
+/**
+ * Prints the friends slug
+ *
+ * @since  BuddyDrive 1.1
+ *
+ * @uses buddydrive_get_friends_subnav_slug() to get the friends subnav slug
+ * @return string the subnav slug
+ */
+function buddydrive_friends_subnav_slug() {
+	echo buddydrive_get_friends_subnav_slug();
+}
+	
+	/**
+	 * Returns the BuddyDrive friends subnav slug
+	 *
+	 * @since  BuddyDrive 1.1
+	 *
+	 * @uses bp_get_option() to get root blog preferences
+	 * @return string the subnav slug
+	 */
+	function buddydrive_get_friends_subnav_slug() {
+		$friends_slug = bp_get_option( '_buddydrive_friends_subnav_slug', 'friends' );
+
+		return apply_filters( 'buddydrive_get_friends_subnav_slug', $friends_slug );
 	}
 
 /**
@@ -361,14 +445,14 @@ add_action( 'buddydrive_admin_init', 'buddydrive_check_version' );
  * 
  * @param  boolean $bytes do we want it in bytes ?
  * @uses wp_max_upload_size() to get the config max upload size
- * @uses get_option() to get the admin settings for BuddyDrive
+ * @uses bp_get_option() to get the admin settings for BuddyDrive
  * @return int the max upload size
  */
 function buddydrive_max_upload_size( $bytes = false ) {
 	$max_upload = wp_max_upload_size();
 	$max_upload_mo = $max_upload / 1024 / 1024;
 	
-	$buddydrive_max_upload  = get_option( '_buddydrive_max_upload', $max_upload_mo );
+	$buddydrive_max_upload  = bp_get_option( '_buddydrive_max_upload', $max_upload_mo );
 	$buddydrive_max_upload = intval( $buddydrive_max_upload );
 
 	if( empty( $bytes ) )
@@ -394,7 +478,7 @@ function buddydrive_array_checked( $value = false, $array = false ) {
 	$array = array_flip( $array );
 
 	if( in_array( $value, $array ) )
-		return checked(true);
+		return checked( true );
 
 }
 
@@ -402,18 +486,51 @@ function buddydrive_array_checked( $value = false, $array = false ) {
  * What are the mime types allowed by admin ?
  * 
  * @param  array $allowed_file_types WordPress default
- * @uses get_option() to get the choice of the admin
+ * @uses bp_get_option() to get the choice of the admin
  * @return array the mime types allowed by admin
  */
 function buddydrive_allowed_file_types( $allowed_file_types ) {
 	
-	$allowed_ext = get_option('_buddydrive_allowed_extensions');
+	$allowed_ext = bp_get_option( '_buddydrive_allowed_extensions' );
 
 	if( empty( $allowed_ext ) || !is_array( $allowed_ext ) || count( $allowed_ext ) < 1 )
 		return $allowed_file_types;
 
-	$allowed_ext = array_flip($allowed_ext);
+	$allowed_ext = array_flip( $allowed_ext );
 	$allowed_ext = array_intersect_key( $allowed_file_types, $allowed_ext );
 
 	return $allowed_ext;
+}
+
+/**
+ * Waits before checking if a 404 was a BuddyDrive file.
+ *
+ * @since  version 1.1
+ * 
+ * @uses is_404() to check it's a 404
+ * @uses bp_get_root_domain() to get the blog's url where BuddyPress is running
+ * @uses esc_url() to sanitize url
+ * @uses buddydrive() to get the BuddyDrive globals
+ * @uses buddydrive_get_root_url() to get the plugin's root url
+ * @uses bp_core_redirect() to redirect to the BuddyDrive item
+ */
+function buddydrive_maybe_redirect_oldlink() {
+
+	if( !is_404() )
+		return;
+
+	$root_domain_url = bp_get_root_domain();
+	$maybe_buddydrive = trailingslashit( $root_domain_url . esc_url( $_SERVER['REQUEST_URI'] ) );
+
+	$buddydrive_slug = buddydrive()->buddydrive_slug;
+	$buddydrive_old_root_url = trailingslashit( $root_domain_url ) . $buddydrive_slug;
+
+	if( strpos( $maybe_buddydrive, $buddydrive_old_root_url ) === 0 ) {
+
+		$buddydrive_new_url = str_replace( $buddydrive_old_root_url, buddydrive_get_root_url(), $maybe_buddydrive );
+
+		bp_core_redirect( $buddydrive_new_url );
+
+	}
+	
 }

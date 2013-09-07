@@ -25,14 +25,37 @@ class BuddyDrive_Group extends BP_Group_Extension {
 	 * @uses buddydrive_get_slug() to get the plugin slug
 	 */
 	function __construct() {
+
+		// BuddyPress is < 1.8, we use the old way
+		if( version_compare( bp_get_version(), '1.8-beta1', '<' ) ) {
+
+			$this->name = buddydrive_get_name();
+			$this->slug = buddydrive_get_slug();
+			$this->nav_item_position = 31;
+			$this->enable_nav_item = $this->enable_nav_item();
+			$this->admin_metabox_context = 'side';
+			$this->admin_metabox_priority = 'core';
+
+			// BuddyPress is > 1.8, we use the new way
+		} else {
+
+			$args = array(
+            	'slug'              => buddydrive_get_slug(),
+           		'name'              => buddydrive_get_name(),
+           		'visibility'        => 'private',
+           		'nav_item_position' => 31,
+           		'enable_nav_item'   => $this->enable_nav_item(),
+           		'screens'           => array( 
+           								'admin' => array( 
+           											'metabox_context'  => 'side',
+           											'metabox_priority' => 'core'
+           											)
+           		)
+        	);
+        
+        	parent::init( $args );
+		}
 		
-		$this->name = buddydrive_get_name();
-		$this->slug = buddydrive_get_slug();
-		$this->nav_item_position = 31;
-		$this->enable_nav_item = $this->enable_nav_item();
-		
-		add_action( 'bp_groups_admin_meta_boxes', array( $this, 'admin_ui_edit_screen' ) );
-		add_action( 'bp_group_admin_edit_after',  array( $this, 'edit_screen_save'), 10, 1 );
 	}
 
 	/**
@@ -69,9 +92,9 @@ class BuddyDrive_Group extends BP_Group_Extension {
 	 * @uses is_admin() to check if we're in WP backend
 	 * @return string html output
 	 */
-	function edit_screen( $group = false ) {
+	function edit_screen( $group_id = false ) {
 			
-		$group_id   = empty( $group->id ) ? bp_get_current_group_id() : $group->id;
+		$group_id   = empty( $group_id ) ? bp_get_current_group_id() : $group_id;
 		$checked = groups_get_groupmeta( $group_id, '_buddydrive_enabled' );
 		?>
 
@@ -79,11 +102,11 @@ class BuddyDrive_Group extends BP_Group_Extension {
 		
 		<fieldset>
 			<legend class="screen-reader-text"><?php echo esc_attr( $this->name ) ?> <?php _e( 'settings', 'buddydrive' );?></legend>
-			<p><?php _e( 'Allow members of this group to share their BuddyDrive folders or files.', 'buddydrive' ); ?></p>
+			<p><?php _e( 'Allow members of this group to share their folders or files.', 'buddydrive' ); ?></p>
 
 			<div class="field-group">
 				<div class="checkbox">
-					<label><input type="checkbox" name="_group_buddydrive_activate" value="1" <?php checked( $checked )?>> <?php _e( 'Activate BuddyDrive', 'buddydrive' );?></label>
+					<label><input type="checkbox" name="_group_buddydrive_activate" value="1" <?php checked( $checked )?>> <?php printf( __( 'Activate %s', 'buddydrive' ), $this->name );?></label>
 				</div>
 			</div>
 		
@@ -144,36 +167,30 @@ class BuddyDrive_Group extends BP_Group_Extension {
 		}
 		
 	}
-	
 
 	/**
-	 * Builds the Group Admin UI metabox
+	 * Displays the form into the Group Admin Meta Box
 	 * 
-	 * @uses add_meta_box()
-	 * @uses get_current_screen() to get the admin current screen
+	 * @since version 1.1
+	 * 
+	 * @param  integer $item_id group id
+	 * @uses  BuddyDrive_Group::edit_screen() to output the form
 	 */
-	function admin_ui_edit_screen() {
-		
-		add_meta_box( 
-			'buddydrive_group_meta_box', 
-			_x( 'BuddyDrive', 'group admin edit screen', 'buddydrive' ), 
-			array( &$this, 'admin_edit_metabox'), 
-			get_current_screen()->id, 
-			'side', 
-			'core' 
-		);
-		
-	}
-	
-	/**
-	 * Populates the metabox with edit screen
-	 * @param  object $item the group object
-	 * @uses BuddyDrive_Group::edit_screen  to display the edit form
-	 */
-	function admin_edit_metabox( $item ) {
-		$this->edit_screen( $item );
+	function admin_screen( $item_id ) {
+		$this->edit_screen( $item_id );
 	}
 
+	/**
+	 * Saves the settings from the Group Admin Meta Box
+	 *
+	 * @since version 1.1
+	 * 
+	 * @param integer $item_id the group id
+	 * @uses BuddyDrive_Group::edit_screen_save() to save the settings
+	 */
+	function admin_screen_save( $item_id ) {
+		$this->edit_screen_save( $item_id );
+	}
 
 	/**
 	 * Displays the BuddyDrive of the group
@@ -228,7 +245,19 @@ class BuddyDrive_Group extends BP_Group_Extension {
 	}
 }
 
+/**
+ * Waits for bp_init hook before loading the group extension
+ *
+ * Let's make sure the group id is defined before loading our stuff
+ * 
+ * @since 1.1.1
+ * 
+ * @uses bp_register_group_extension() to register the group extension
+ */
+function buddydrive_register_group_extension() {
+	bp_register_group_extension( 'BuddyDrive_Group' );
+}
 
-bp_register_group_extension( 'BuddyDrive_Group' );
+add_action( 'bp_init', 'buddydrive_register_group_extension' );
 
 endif;

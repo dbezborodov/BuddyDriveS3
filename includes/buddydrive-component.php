@@ -41,7 +41,8 @@ class BuddyDrive_Component extends BP_Component {
 		}
 		
 		// register the embed handler
-		wp_embed_register_handler( 'buddydrive', '#'.buddydrive_get_root_url().'\/(.+?)\/(.+?)\/#i', 'wp_embed_handler_buddydrive' );
+		add_action( 'bp_init', array( $this, 'register_embed_code' ), 4 );
+		
 	}
 
 	/**
@@ -62,8 +63,10 @@ class BuddyDrive_Component extends BP_Component {
 			'buddydrive-item-classes.php',
 			'buddydrive-item-functions.php',
 			'buddydrive-item-template.php',
-			'buddydrive-item-ajax.php',
+			// DB S3 items 
 			'buddydrive-item-s3.php'
+			/////
+			'buddydrive-item-ajax.php'
 		);
 		
 		if( bp_is_active( 'groups' ) )
@@ -111,6 +114,9 @@ class BuddyDrive_Component extends BP_Component {
 	 * @uses bp_displayed_user_domain() to get displayed user profile link
 	 * @uses bp_loggedin_user_domain() to get current user profile link
 	 * @uses bp_is_active() to check if the friends component is active
+	 * @uses buddydrive_get_user_subnav_name() to get main subnav name
+	 * @uses buddydrive_get_friends_subnav_name() to get friends subnav name
+	 * @uses buddydrive_get_friends_subnav_slug() to get friends subnav slug
 	 */
 	function setup_nav() {
 		$bp =  buddypress();
@@ -129,7 +135,7 @@ class BuddyDrive_Component extends BP_Component {
 
 		// Add a few subnav items under the main Example tab
 		$sub_nav[] = array(
-			'name'            =>  __( 'BuddyDrive Files', 'buddydrive' ),
+			'name'            =>  buddydrive_get_user_subnav_name(),
 			'slug'            => 'files',
 			'parent_url'      => $buddydrive_link,
 			'parent_slug'     => $this->slug,
@@ -140,8 +146,8 @@ class BuddyDrive_Component extends BP_Component {
 		// Add the subnav items to the friends nav item
 		if( bp_is_active('friends') && bp_displayed_user_id() == bp_loggedin_user_id() ) {
 			$sub_nav[] = array(
-				'name'            =>  __( 'Shared by Friends', 'buddydrive' ),
-				'slug'            => 'friends',
+				'name'            => buddydrive_get_friends_subnav_name(),
+				'slug'            => buddydrive_get_friends_subnav_slug(),
 				'parent_url'      => $buddydrive_link,
 				'parent_slug'     => $this->slug,
 				'screen_function' => 'buddydrive_friends_files',
@@ -161,6 +167,9 @@ class BuddyDrive_Component extends BP_Component {
 	 * @uses is_user_logged_in() to check if the user is logged in
 	 * @uses bp_loggedin_user_domain() to get current user's profile link
 	 * @uses buddydrive_get_name() to get BuddyDrive plugin name
+	 * @uses buddydrive_get_user_subnav_name() to get main subnav name
+	 * @uses buddydrive_get_friends_subnav_name() to get friends subnav name
+	 * @uses buddydrive_get_friends_subnav_slug() to get friends subnav slug
 	 * @uses bp_is_active() to check for the friends component
 	 */
 	function setup_admin_bar() {
@@ -187,7 +196,7 @@ class BuddyDrive_Component extends BP_Component {
 			$wp_admin_nav[] = array(
 				'parent' => 'my-account-' . $buddydrive_slug,
 				'id'     => 'my-account-' . $buddydrive_slug .'-files',
-				'title'  => __( 'BuddyDrive Files', 'buddydrive' ),
+				'title'  => buddydrive_get_user_subnav_name(),
 				'href'   => trailingslashit( $buddydrive_link )
 			);
 			
@@ -196,8 +205,8 @@ class BuddyDrive_Component extends BP_Component {
 				$wp_admin_nav[] = array(
 					'parent' => 'my-account-' . $buddydrive_slug,
 					'id'     => 'my-account-' . $buddydrive_slug .'-friends',
-					'title'  => __( 'Shared by Friends', 'buddydrive' ),
-					'href'   => trailingslashit( $buddydrive_link . 'friends' )
+					'title'  => buddydrive_get_friends_subnav_name(),
+					'href'   => trailingslashit( $buddydrive_link . buddydrive_get_friends_subnav_slug() )
 				);
 			}
 
@@ -292,6 +301,19 @@ class BuddyDrive_Component extends BP_Component {
 			buddydrive()->upload_url = $upload_data['url'];
 		}
 		
+	}
+
+	/**
+	 * Registers BuddyDrive embed code
+	 * 
+	 * We need to wait for buddypress()->pages to be set
+	 *
+	 * @since BuddyDrive 1.1
+	 * 
+	 * @uses wp_embed_register_handler() registers the embed code for BuddyDrive
+	 */
+	function register_embed_code() {
+		wp_embed_register_handler( 'buddydrive', '#'.buddydrive_get_root_url().'\/(.+?)\/(.+?)\/#i', 'wp_embed_handler_buddydrive' );
 	}
 
 }

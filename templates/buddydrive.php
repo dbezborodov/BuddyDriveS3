@@ -11,7 +11,7 @@
 
 				
 
-				<h3><?php _e( 'BuddyDrive', 'buddydrive' ); ?></h3>
+				<h3><?php buddydrive_name();?></h3>
 
 			
 <?php else:?>

@@ -32,7 +32,7 @@ add_filter( 'bp_get_template_stack', 'buddydrive_get_template_stack', 10, 1 );
  * @uses buddydrive_is_bp_default() to check for BP Default or BuddyPress standalone themes
  * @uses bp_is_current_component() to check for BuddyDrive component
  * @uses buddydrive_get_plugin_dir() the path to plugin dir
- * @return [type]                 [description]
+ * @return string the found template
  */
 function buddydrive_load_template_filter( $found_template, $templates ) {
 	global $bp, $bp_deactivated;
@@ -232,7 +232,7 @@ class BuddyDrive_Theme_Compat {
 
 		bp_theme_compat_reset_post( array(
 			'ID'             => 0,
-			'post_title'     => __( 'BuddyDrive', 'buddydrive' ),
+			'post_title'     => buddydrive_get_name(),
 			'post_author'    => 0,
 			'post_date'      => 0,
 			'post_content'   => '',

@@ -846,7 +846,11 @@ jQuery(document).ready(function($){
 		uploader.bind('FilesAdded', function(up, files) {
 			// one file at a time !
 			if(files.length > 1) {
+				for(i in files)
+					up.removeFile(files[i]);
+
 				alert( pluploadL10n.one_at_a_time );
+
 				return false;
 			}
 			

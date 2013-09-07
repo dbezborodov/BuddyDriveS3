@@ -3,7 +3,7 @@
 Plugin Name: BuddydriveS3
 Plugin URI: https://github.com/dbezborodov/BuddyDriveS3
 Description: Buddydrive fork, uses Amazon S3 instead of local storage
-Version: 1.1
+Version: 1.1.1
 Author: dbezborodov
 Author URI: https://github.com/dbezborodov
 License: GPLv2
@@ -58,9 +58,9 @@ class BuddyDrive {
 	
 	private function __construct() { /* Do nothing here */ }
 	
-	public function __clone() { _doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'buddydrive' ), '1.0' ); }
+	public function __clone() { _doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'buddydrive' ), '1.1.1' ); }
 
-	public function __wakeup() { _doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'buddydrive' ), '1.0' ); }
+	public function __wakeup() { _doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'buddydrive' ), '1.1.1' ); }
 
 	public function __isset( $key ) { return isset( $this->data[$key] ); }
 
@@ -87,7 +87,7 @@ class BuddyDrive {
 
 		/** Version ***********************************************************/
 
-		$this->version    = '1.0';
+		$this->version    = '1.1.1';
 
 		/** Paths *************************************************************/
 

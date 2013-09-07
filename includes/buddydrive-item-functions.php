@@ -16,7 +16,7 @@ function buddydrive_get_js_l10n() {
 				'group_remove_error'   => __( 'Error: Item could not be removed from current group', 'buddydrive' ),
 				'cbs_message'          => __( 'Please use the checkboxes to select one or more items', 'buddydrive' ),
 				'cb_message'           => __( 'Please use the checkbox to select one item to edit', 'buddydrive' ),
-				'confirm_delete'      => __( 'Are you sure you want to delete %d item(s) ?', 'buddydrive' ),
+				'confirm_delete'       => __( 'Are you sure you want to delete %d item(s) ?', 'buddydrive' ),
 				'delete_error_message' => __( 'Error: Item(s) could not be deleted', 'buddydrive' ),
 				'title_needed'         => __( 'The title is required', 'buddydrive' ),
 				'group_needed'         => __( 'Please choose a group in the list', 'buddydrive' ),
@@ -88,6 +88,7 @@ function buddydrive_get_group_buddydrive_url( $group_id = 0 ) {
  * @uses bp_displayed_user_id() to get displayed user id
  * @uses bp_core_get_user_domain() to get the user's home page url
  * @uses buddydrive_get_slug() to get BuddyDrive slug
+ * @uses buddydrive_get_friends_subnav_slug() to get BuddyDrive's friends subnav
  * @return string  $buddydrive_friends the url to the shared by friends BuddyDrive
  */
 function buddydrive_get_friends_buddydrive_url( $user_id = 0 ) { 
@@ -98,7 +99,7 @@ function buddydrive_get_friends_buddydrive_url( $user_id = 0 ) {
 
 	$buddydrive_link = trailingslashit( $user_domain . buddydrive_get_slug() );
 
-	$buddydrive_friends = trailingslashit( $buddydrive_link . 'friends' );
+	$buddydrive_friends = trailingslashit( $buddydrive_link . buddydrive_get_friends_subnav_slug() );
 	
 	return $buddydrive_friends;
 }
@@ -112,7 +113,7 @@ function buddydrive_get_friends_buddydrive_url( $user_id = 0 ) {
  * @return boolean true or false
  */
 function buddydrive_is_group() {
-	if( bp_is_groups_component() && bp_is_single_item() && bp_is_current_action( 'buddydrive' ) )
+	if( bp_is_groups_component() && bp_is_single_item() && bp_is_current_action( buddydrive_get_slug() ) )
 		return true;
 		
 	else return false;
@@ -550,4 +551,44 @@ function wp_embed_handler_buddydrive( $matches, $attr, $url, $rawattr ) {
 		restore_current_blog();
 
 	return apply_filters( 'embed_buddydrive', $embed, $matches, $attr, $url, $rawattr );
+}
+
+/**
+ * Returns the user's quota
+ *
+ * First check for a user meta, if not set, fallback to user's role quota
+ * 
+ * @since  version 1.1
+ * 
+ * @param  integer $user_id the requested user's id
+ * @global $wpdb the WordPress db class
+ * @uses bp_loggedin_user_id() to get current user's id
+ * @uses get_user_meta() to get user's preference
+ * @uses bp_get_root_blog_id() to get the id of the blog where BuddyPress is activated
+ * @uses bp_get_option() to get blog's preference
+ * @return integer the user's quota
+ */
+function buddydrive_get_quota_by_user_id( $user_id = 0 ) {
+	global $wpdb;
+
+	if( empty( $user_id ) )
+		$user_id = bp_loggedin_user_id();
+
+	$user_quota = intval( get_user_meta( $user_id, '_buddydrive_user_quota', true ) );
+
+	if( empty( $user_quota ) ) {
+		// get's primary role for user
+		$user_roles = get_user_meta( $user_id, $wpdb->get_blog_prefix( bp_get_root_blog_id() ) . 'capabilities', true );
+		$user_roles = array_keys( $user_roles );
+		$user_role = is_array( $user_roles ) ? $user_roles[0] : bp_get_option('default_role');
+
+		$option_user_quota = bp_get_option( '_buddydrive_user_quota', 1000 );
+
+		if( is_array( $option_user_quota ) )
+			$user_quota = !empty( $option_user_quota[$user_role] ) ? $option_user_quota[$user_role] : 1000;
+		else
+			$user_quota = $option_user_quota;
+	}
+
+	return $user_quota;
 }

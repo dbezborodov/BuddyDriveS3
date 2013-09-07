@@ -83,8 +83,10 @@ function buddydrive_file_downloader() {
 		
 		$buddydrive_file = buddydrive_get_buddyfile( $buddyfile_name );
 		
-		if( empty( $buddydrive_file ) )
+		if( empty( $buddydrive_file ) ) {
+			bp_core_add_message( __( 'OOps, we could not find your file.', 'buddydrive' ), 'error' );
 			bp_core_redirect( buddydrive_get_root_url() );
+		}
 		
 		$buddydrive_file_path = $buddydrive_file->path;
 		$buddydrive_file_name = $buddydrive_file->file;
@@ -160,7 +162,13 @@ function buddydrive_file_downloader() {
 						$can_donwload = true;
 					else{
 						$group = groups_get_group( array( 'group_id' => $buddydrive_file->group ) );
-						$redirect = bp_get_group_permalink( $group );
+
+						if( 'hidden' == $group->status )
+							$redirect = wp_get_referer();
+
+						else
+							$redirect = bp_get_group_permalink( $group );
+						
 						bp_core_add_message( __( 'You must be member of the group to download the file', 'buddydrive' ), 'error' );
 						bp_core_redirect( $redirect );
 						$can_donwload = false;
@@ -172,7 +180,7 @@ function buddydrive_file_downloader() {
 			if( $buddydrive_file->user_id == bp_loggedin_user_id() || is_super_admin() )
 				$can_donwload = true;
 		}
-
+		
 		// DB Download from S3 first
 		buddydrive_downloadfrom_s3( $buddydrive_file_path, $buddydrive_file->user_id );
 
@@ -210,15 +218,17 @@ function buddydrive_file_downloader() {
 
 			die();
 		}
-		
+
 	} else if( !bp_displayed_user_id() && bp_is_current_component( 'buddydrive' ) && 'folder' == bp_current_action() ) {
 		
 		$buddyfolder_name = bp_action_variable( 0 );
 		
 		$buddyfolder = buddydrive_get_buddyfile( $buddyfolder_name, buddydrive_get_folder_post_type() );
 
-		if( empty( $buddyfolder ) )
+		if( empty( $buddyfolder ) ) {
+			bp_core_add_message( __( 'OOps, we could not find your folder.', 'buddydrive' ), 'error' );
 			bp_core_redirect( buddydrive_get_root_url() );
+		}
 
 		// in case of the folder, we open it on the user's BuddyDrive or the group one
 		$buddydrive_root_link = ( $buddyfolder->check_for == 'groups' ) ? buddydrive_get_group_buddydrive_url( $buddyfolder->group ) : buddydrive_get_user_buddydrive_url( $buddyfolder->user_id ) ;
@@ -235,6 +245,7 @@ add_action( 'buddydrive_actions', 'buddydrive_file_downloader', 1 );
  *
  * @uses buddydrive_get_buddyfile() gets the BuddyFile Object
  * @uses buddydrive_get_file_post_type() gets the BuddyFile post type
+ * @uses buddydrive_get_name() so that it's possible to brand the plugin
  * @uses buddydrive_get_folder_post_type() gets the BuddyFolder post type
  * @uses bp_loggedin_user_id() to get current user id
  * @uses buddydrive_get_user_buddydrive_url() to build the folder url on user's BuddyDrive
@@ -260,7 +271,7 @@ function buddydrive_attached_file_to_message() {
 
 			if( $buddyitem->post_type == buddydrive_get_file_post_type() ) {
 				$displayed_link = $buddyitem->link;
-				$buddytype = 'BuddyDrive File';
+				$buddytype = buddydrive_get_name() . ' File';
 
 				if( !empty( $buddyitem->post_parent ) ) {
 					$parent = buddydrive_get_buddyfile( $buddyitem->post_parent, buddydrive_get_folder_post_type() );
@@ -270,7 +281,7 @@ function buddydrive_attached_file_to_message() {
 
 			} else {
 				$displayed_link = buddydrive_get_user_buddydrive_url( bp_loggedin_user_id() ) . '?folder-'.$buddyitem->ID ;
-				$buddytype = 'BuddyDrive Folder';
+				$buddytype = buddydrive_get_name() . ' Folder';
 				$password = !empty( $buddyitem->password  ) ? $buddyitem->password : false ;
 			}
 			?>
@@ -370,7 +381,6 @@ function buddydrive_update_children( $params, $args, $item ) {
 
 add_action( 'buddydrive_update_item', 'buddydrive_update_children', 1, 3 ) ;
 
-
 /**
  * Removes Buddyfiles, BuddyFolders and files of a deleted user
  * 
@@ -384,3 +394,24 @@ function buddydrive_remove_user( $user_id ) {
 add_action( 'wpmu_delete_user',  'buddydrive_remove_user', 11, 1 );
 add_action( 'delete_user',       'buddydrive_remove_user', 11, 1 );
 add_action( 'bp_make_spam_user', 'buddydrive_remove_user', 11, 1 );
+
+/**
+ * Hooks the create complete group action to eventually enable BuddyDrive for the group just created
+ *
+ * @since version 1.1
+ * 
+ * @param  integer $group_id the group id
+ * @uses bp_get_option() to get blog's preference
+ * @uses groups_update_groupmeta() to save a new meta for the group
+ */
+function buddydrive_maybe_enable_group( $group_id = 0 ) {
+	if( empty( $group_id ) )
+		return;
+
+	$enable_group = bp_get_option( '_buddydrive_auto_group', 0 );
+
+	if( !empty( $enable_group ) )
+		groups_update_groupmeta( $group_id, '_buddydrive_enabled', 1 );
+}
+
+add_action( 'groups_group_create_complete', 'buddydrive_maybe_enable_group', 10, 1 );

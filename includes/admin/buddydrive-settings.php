@@ -15,6 +15,11 @@ function buddydrive_admin_get_settings_sections() {
 			'title'    => __( 'Main Settings', 'buddydrive' ),
 			'callback' => 'buddydrive_admin_setting_callback_main_section',
 			'page'     => 'buddydrive',
+		),
+		'buddydrive_settings_customs' => array(
+			'title'    => __( 'Custom Slugs and Names Settings', 'buddydrive' ),
+			'callback' => 'buddydrive_admin_setting_callback_custom_section',
+			'page'     => 'buddydrive',
 		)
 	) );
 }
@@ -53,14 +58,52 @@ function buddydrive_admin_get_settings_fields() {
 				'callback'          => 'buddydrive_admin_setting_callback_allowed_extensions',
 				'sanitize_callback' => 'buddydrive_sanitize_allowed_extension',
 				'args'              => array()
+			),
+
+			// Auto enable BuddyDrive on group creation
+			'_buddydrive_auto_group' => array(
+				'title'             => __( 'Enable BuddyDrive for groups on group creation', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_auto_group',
+				'sanitize_callback' => 'absint',
+				'args'              => array()
 			)
+		),
+
+		/** Custom Section ******************************************************/
+
+		'buddydrive_settings_customs' => array(
+
+			// Main subnav name
+			'_buddydrive_user_subnav_name' => array(
+				'title'             => __( 'Name for main subnav', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_user_subnav_name',
+				'sanitize_callback' => 'buddydrive_sanitize_custom_name',
+				'args'              => array()
+			),
+
+			// Friends subnav slug
+			'_buddydrive_friends_subnav_slug' => array(
+				'title'             => __( 'Slug for friends subnav', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_friends_subnav_slug',
+				'sanitize_callback' => 'buddydrive_sanitize_custom_slug',
+				'args'              => array()
+			),
+
+			// Friends subnav slug
+			'_buddydrive_friends_subnav_name' => array(
+				'title'             => __( 'Name for friends subnav', 'buddydrive' ),
+				'callback'          => 'buddydrive_admin_setting_callback_friends_subnav_name',
+				'sanitize_callback' => 'buddydrive_sanitize_custom_name',
+				'args'              => array()
+			),
 		)
 	) );
+
 }
 
 
 /**
- * Gives the setting fields for section (anticipating next versions..??)
+ * Gives the setting fields for section
  * 
  * @param  string $section_id 
  * @return array  the fields
@@ -91,20 +134,78 @@ function buddydrive_admin_setting_callback_main_section() {
 }
 
 /**
+ * Some text to introduce the custom settings section
+ * 
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_custom_section() {
+	$page_id = isset( buddypress()->pages->buddydrive->id ) ? buddypress()->pages->buddydrive->id : false;
+?>
+
+	<p><?php _e( 'Customize the slugs and names of Buddydrive!', 'buddydrive' ); ?></p>
+
+	<?php if( !empty( $page_id ) ) :?>
+		<p class="description"><?php printf( __( 'NB : to customize the name and the slug of the main directory page, you need to edit the title and permalink of its <a href="%s">WordPress page</a>', 'buddydrive' ), get_edit_post_link( $page_id ) );?></p>
+
+<?php endif;
+}
+
+/**
  * Let the admin customize users quota
  *
- * @uses get_option() to get the user's quota
+ * @uses bp_get_option() to get the user's quota
+ * @uses translate_user_role() to get the role caption out of his name
  * @return string html
  */
 function buddydrive_admin_setting_callback_user_quota() {
-	$user_quota = get_option( '_buddydrive_user_quota', 1000 );
-	$user_quota = intval( $user_quota );
+	$roles = get_editable_roles();
+	
+	$user_quota = bp_get_option( '_buddydrive_user_quota', 1000 );
+
+	if( is_array( $user_quota ) )
+		$user_quota = array_map( 'absint', $user_quota );
+
+	else {
+		$default = intval( $user_quota );
+		$user_quota = array_fill_keys( array_keys( $roles ), $default );
+	}
 	?>
+	<table>
+	
+		<?php foreach ( $roles as $role => $details ) :
+			$name = translate_user_role( $details['name'] );
+			?>
+		
+			<tr>
+				<td><strong><?php echo $name;?></strong></td>
+				<td>
+					<input name="_buddydrive_user_quota[<?php echo $role;?>]" type="number" min="1" step="1" id="_buddydrive_user_quota-<?php echo $role;?>" value="<?php buddydrive_admin_fill_empty_roles( $role, $user_quota);?>" class="small-text" />
+					<label for="_buddydrive_user_quota[<?php echo $role;?>]"><?php _e( 'MO', 'buddydrive' ); ?></label>
+				</td>
+			</tr>
 
-	<input name="_buddydrive_user_quota" type="number" min="1" step="1" id="_buddydrive_user_quota" value="<?php echo $user_quota;?>" class="small-text" />
-	<label for="_buddydrive_user_quota"><?php _e( 'MO', 'buddydrive' ); ?></label>
+		<?php endforeach;?>
 
+	</table>
 	<?php
+}
+
+/**
+ * Adds a default value in case of new roles or retrieve the known role value.
+ *
+ * @since  version 1.1
+ * 
+ * @param  string  $role      role to check
+ * @param  array  $user_quota list of customized quota by roles
+ * @param  integer $default   1000 as it was previous version default value
+ * @return integer            the value
+ */
+function buddydrive_admin_fill_empty_roles( $role, $user_quota, $default = 1000 ) {
+
+	if( !empty( $user_quota[$role] ) )
+		echo intval( $user_quota[$role] );
+	else
+		echo $default;
 }
 
 /**
@@ -159,15 +260,91 @@ function buddydrive_admin_setting_callback_allowed_extensions() {
 }
 
 /**
+ * Let the admin automatically enable BuddyDrive on group creation
+ *
+ * @since  version 1.1
+ *
+ * @uses bp_get_option() to get the user's subnav
+ * @uses checked() to eventually add a checked attribute
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_auto_group() {
+	$enable = bp_get_option( '_buddydrive_auto_group', 0 );
+	?>
+	<input id="_buddydrive_auto_group" name="_buddydrive_auto_group" type="checkbox" value="1" <?php checked( 1, $enable );?> />
+	<?php
+}
+
+/**
+ * Let the admin customize the name of the main user's subnav
+ *
+ * @since  version 1.1
+ *
+ * @uses bp_get_option() to get the user's subnav
+ * @uses sanitize_title() to sanitize user's subnav name
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_user_subnav_name() {
+	$user_subnav = bp_get_option( '_buddydrive_user_subnav_name', __( 'BuddyDrive Files', 'buddydrive' ) );
+	$user_subnav = sanitize_text_field( $user_subnav );
+	?>
+
+	<input name="_buddydrive_user_subnav_name" type="text" id="_buddydrive_user_subnav_name" value="<?php echo $user_subnav;?>" class="regular-text code" />
+
+	<?php
+}
+
+/**
+ * Let the admin customize the slug of the friends subnav
+ *
+ * @since  version 1.1
+ * 
+ * @uses bp_get_option() to get the user's subnav
+ * @uses sanitize_title() to sanitize user's subnav name
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_friends_subnav_slug() {
+	$friends_slug = bp_get_option( '_buddydrive_friends_subnav_slug', 'friends' );
+	$friends_slug = sanitize_title( $friends_slug );
+	?>
+
+	<input name="_buddydrive_friends_subnav_slug" type="text" id="_buddydrive_friends_subnav_slug" value="<?php echo $friends_slug;?>" class="regular-text code" />
+
+	<?php
+}
+
+/**
+ * Let the admin customize the slug of the friends subnav
+ *
+ * @since  version 1.1
+ *
+ * @uses bp_get_option() to get the user's subnav
+ * @uses sanitize_title() to sanitize user's subnav name
+ * @return string html
+ */
+function buddydrive_admin_setting_callback_friends_subnav_name() {
+	$friends_subnav = bp_get_option( '_buddydrive_friends_subnav_name', __( 'Shared by Friends', 'buddydrive' ) );
+	$friends_subnav = sanitize_text_field( $friends_subnav );
+	?>
+
+	<input name="_buddydrive_friends_subnav_name" type="text" id="_buddydrive_friends_subnav_name" value="<?php echo $friends_subnav;?>" class="regular-text code" />
+
+	<?php
+}
+
+/**
  * Sanitize the user's quota
  *
  * @param int $option 
  * @return int the user's quota
  */
 function buddydrive_sanitize_user_quota( $option ) {
-	$input = intval( $_POST['_buddydrive_user_quota'] );
+	if( is_array( $option ) )
+		$option =  array_map( 'intval', $option );
+	else
+		$option = intval( $option );
 	
-	return $input;
+	return $option;
 }
 
 /**
@@ -178,7 +355,7 @@ function buddydrive_sanitize_user_quota( $option ) {
  * @return int the max upload sanitized
  */
 function buddydrive_sanitize_max_upload( $option ) {
-	$input = intval( $_POST['_buddydrive_max_upload'] );
+	$input = intval( $option );
 
 	if( !empty( $input ) ) {
 		$max = wp_max_upload_size();
@@ -198,12 +375,40 @@ function buddydrive_sanitize_max_upload( $option ) {
  * @return array the sanitized allowed mime types
  */
 function buddydrive_sanitize_allowed_extension( $option ) {
-	$input = $_POST['_buddydrive_allowed_extensions'];
-
-	if( is_array( $input ) )
-		$input = array_map( 'trim', $input );
+	if( is_array( $option ) )
+		$input = array_map( 'trim', $option );
 
 	return $input;
+}
+
+/**
+ * Sanitize the slug
+ *
+ * @since  version 1.1
+ *
+ * @param string $option 
+ * @uses sanitize_title() to sanitize the slug
+ * @return string the slug
+ */
+function buddydrive_sanitize_custom_slug( $option ) {
+	$option = sanitize_title( $option );
+	
+	return $option;
+}
+
+/**
+ * Sanitize the names
+ *
+ * @since  version 1.1
+ *
+ * @param string $option 
+ * @uses sanitize_text_field() to sanitize the name
+ * @return string the slug
+ */
+function buddydrive_sanitize_custom_name( $option ) {
+	$option = sanitize_text_field( $option );
+	
+	return $option;
 }
 
 /**
@@ -260,6 +465,8 @@ function buddydrive_admin_settings() {
  * @uses bp_update_option() to save the options in root blog
  * @uses buddydrive_sanitize_max_upload() to sanitize max upload
  * @uses buddydrive_sanitize_allowed_extension() to sanitize the mime types
+ * @uses buddydrive_sanitize_custom_name() to sanitize the custom names of subnavs
+ * @uses buddydrive_sanitize_custom_slug() to sanitize the custom slugs of subnavs
  */
 function buddydrive_handle_settings_in_multisite() {
 	
@@ -282,6 +489,24 @@ function buddydrive_handle_settings_in_multisite() {
 	
 	if( ! empty( $allowed_ext ) && is_array( $allowed_ext ) )
 		bp_update_option( '_buddydrive_allowed_extensions', $allowed_ext );
+
+	$main_subnav = buddydrive_sanitize_custom_name( $_POST['_buddydrive_user_subnav_name'] );
+	
+	if( ! empty( $main_subnav ) )
+		bp_update_option( '_buddydrive_user_subnav_name', $main_subnav );
+
+	$friends_slug = buddydrive_sanitize_custom_slug( $_POST['_buddydrive_friends_subnav_slug'] );
+	
+	if( ! empty( $friends_slug ) )
+		bp_update_option( '_buddydrive_friends_subnav_slug', $friends_slug );
+
+	$friends_subnav = buddydrive_sanitize_custom_name( $_POST['_buddydrive_friends_subnav_name'] );
+	
+	if( ! empty( $friends_subnav ) )
+		bp_update_option( '_buddydrive_friends_subnav_name', $friends_subnav );
+
+	$group_enable = isset( $_POST['_buddydrive_auto_group'] ) ? intval( $_POST['_buddydrive_auto_group'] ) : 0;
+	bp_update_option( '_buddydrive_auto_group', $group_enable );
 	
 	?>
 	<div id="message" class="updated"><p><?php _e( 'Settings saved', 'buddydrive' );?></p></div>

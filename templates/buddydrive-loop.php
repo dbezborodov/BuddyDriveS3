@@ -58,7 +58,7 @@
 			<tr id="no-buddyitems">
 				<td colspan="5">
 					<div id="message" class="info">
-						<p><?php _e( 'Sorry, there was no buddydrive items found.', 'buddydrive' ); ?></p>
+						<p><?php printf( __( 'Sorry, there was no %s items found.', 'buddydrive' ), buddydrive_get_name() ); ?></p>
 					</div>
 				</td>
 			</tr>

@@ -42,7 +42,7 @@ function buddydrive_save_new_buddyfile() {
 	add_filter( 'upload_dir', 'buddydrive_temporarly_filters_wp_upload_dir', 10, 1);
 	add_filter( 'upload_mimes', 'buddydrive_allowed_upload_mimes', 10, 1 );
 	add_filter( 'wp_handle_upload_prefilter', 'buddydrive_check_upload_size', 10, 1 );
-
+	
 	// DB Move to S3 when WP finishes uploading 
 	add_filter( 'wp_handle_upload', 'buddydrive_uploadto_s3', 10, 1); 
 	
@@ -93,6 +93,14 @@ function buddydrive_save_new_buddyfile() {
 		$meta->password = !empty( $password ) ? $password : false ;
 			
 		$meta->groups = !empty( $group ) ? $group : false;
+
+		/* 
+		if the name is completely numeric, buddydrive_get_buddyfile
+		will look for an  id instead of a post name, so to avoid this,
+		we add a prefix to the name
+		*/
+		if( is_numeric( $name ) )
+			$name = 'f-' . $name;
 
 		// Construct the buddydrive_file_post_type array
 		$args = array(
@@ -551,6 +559,14 @@ function buddydrive_ajax_update_item(){
 		$args['group'] = $_POST['group'];
 	
 	$args['parent_folder_id'] = !empty( $_POST['folder'] ) ? intval( $_POST['folder'] ) : 0 ;
+
+	// We need to check if the parent folder is attached to a group.
+	if( !empty( $args['parent_folder_id'] ) ) {
+		$maybe_in_group = get_post_meta( $args['parent_folder_id'], '_buddydrive_sharing_groups', true );
+
+		if( !empty( $maybe_in_group ) )
+			$args['group'] = intval( $maybe_in_group );
+	}
 		
 	$updated = buddydrive_update_item( $args, $item );
 
@@ -590,6 +606,7 @@ add_action( 'wp_ajax_buddydrive_updateitem', 'buddydrive_ajax_update_item' );
  * @uses buddydrive_get_buddyfile() to get item
  * @uses groups_get_group() to get the group
  * @uses bp_core_get_userlink() to get link to user's profile
+ * @uses buddydrive_get_name() so that it's possible to brand the plugin
  * @uses bp_get_group_permalink() to build the group permalink
  * @uses groups_record_activity() to finaly record the activity
  * @return int 1 or string an error message
@@ -632,7 +649,7 @@ function buddydrive_share_in_group() {
 		if( !empty( $group_id ) ) {
 			$group = groups_get_group( array( 'group_id' => $group_id ) );
 		
-			$action  = $activity_action  = sprintf( __( '%1$s shared a BuddyDrive Item in the group %2$s', 'buddydrive'), bp_core_get_userlink( $user_id ), '<a href="' . bp_get_group_permalink( $group ) . '">' . esc_attr( $group->name ) . '</a>' );
+			$action  = $activity_action  = sprintf( __( '%1$s shared a %2$s Item in the group %3$s', 'buddydrive'), bp_core_get_userlink( $user_id ), buddydrive_get_name(), '<a href="' . bp_get_group_permalink( $group ) . '">' . esc_attr( $group->name ) . '</a>' );
 			$content = $link;
 			$args = array(
 					'user_id'   => $user_id,
@@ -664,6 +681,7 @@ add_action( 'wp_ajax_buddydrive_groupupdate', 'buddydrive_share_in_group' );
  * @uses check_admin_referer() for security reasons
  * @uses bp_loggedin_user_id() to get the current user id
  * @uses buddydrive_get_folder_post_type() to get the BuddyFolder post type
+ * @uses buddydrive_get_name() so that it's possible to brand the plugin
  * @uses buddydrive_get_file_post_type() to get the BuddyFile post type
  * @uses buddydrive_get_buddyfile() to get item
  * @uses bp_core_get_userlink() to get link to user's profile
@@ -701,7 +719,7 @@ function buddydrive_share_in_profile() {
 			die();
 		}
 		
-		$action  = sprintf( __( '%s shared a BuddyDrive Item', 'buddydrive'), bp_core_get_userlink( $user_id ) );
+		$action  = sprintf( __( '%1$s shared a %2$s Item', 'buddydrive'), bp_core_get_userlink( $user_id ), buddydrive_get_name() );
 		$content = $link;
 		$args = array(
 				'user_id'      => $user_id,
