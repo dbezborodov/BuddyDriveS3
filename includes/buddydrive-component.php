@@ -64,7 +64,7 @@ class BuddyDrive_Component extends BP_Component {
 			'buddydrive-item-functions.php',
 			'buddydrive-item-template.php',
 			// DB S3 items 
-			'buddydrive-item-s3.php'
+			'buddydrive-item-s3.php',
 			/////
 			'buddydrive-item-ajax.php'
 		);
